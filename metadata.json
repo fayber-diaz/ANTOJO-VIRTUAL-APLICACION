@@ -1,0 +1,6 @@
+{
+  "name": "ANTOJO-VIRTUAL",
+  "description": "El epicentro digital de comida rápida, sabor callejero y parrilladas auténticas para Neiva, Huila. Entregas calientes y al instante en tu puerta.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
