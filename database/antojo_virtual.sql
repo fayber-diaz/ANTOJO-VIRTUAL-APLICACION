@@ -1,6 +1,7 @@
 -- =========================================================
 -- Base de Datos: Antojo Virtual (Neiva, Huila)
 -- Compatible con XAMPP / MariaDB / MySQL 5.7+ / 8.0+
+-- Con Soporte JWT y Roles de Usuarios
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS `antojo_virtual` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -10,6 +11,9 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `order_tracking_events`;
 DROP TABLE IF EXISTS `order_items`;
 DROP TABLE IF EXISTS `orders`;
+DROP TABLE IF EXISTS `jwt_refresh_tokens`;
+DROP TABLE IF EXISTS `jwt_blacklist`;
+DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `coupons`;
 DROP TABLE IF EXISTS `item_options`;
 DROP TABLE IF EXISTS `menu_items`;
@@ -17,6 +21,60 @@ DROP TABLE IF EXISTS `restaurants`;
 DROP TABLE IF EXISTS `categories`;
 DROP TABLE IF EXISTS `riders`;
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ---------------------------------------------------------
+-- Tabla: Usuarios (Autenticación JWT)
+-- ---------------------------------------------------------
+CREATE TABLE `users` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(150) NOT NULL UNIQUE,
+  `password` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(30) DEFAULT NULL,
+  `address` VARCHAR(200) DEFAULT NULL,
+  `comuna` VARCHAR(50) DEFAULT 'Comuna 4 - Centro',
+  `role` ENUM('customer', 'admin', 'restaurant', 'rider') DEFAULT 'customer',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Usuarios de prueba predeterminados
+-- admin@antojo.com  → Admin2026!
+-- mateo@gmail.com   → Cliente2026!
+INSERT INTO `users` (`name`, `email`, `password`, `phone`, `address`, `comuna`, `role`) VALUES
+('Administrador Neiva', 'admin@antojo.com',  '$2y$12$eImiTXuWVxfM37uY4JANbeekhD.9oFBptunvd0YmNmzGyCRjTJkXi', '+57 310 000 0000', 'Cra 5 #10-00, Neiva',    'Comuna 4 - Centro', 'admin'),
+('Mateo Rodríguez',    'mateo@gmail.com',   '$2y$12$eImiTXuWVxfM37uY4JANbeekhD.9oFBptunvd0YmNmzGyCRjTJkXi', '+57 314 289 9012', 'Cra. 5 #18-42, Centro', 'Comuna 4 - Centro', 'customer');
+
+-- ---------------------------------------------------------
+-- Tabla: Refresh Tokens JWT (sesiones persistentes)
+-- ---------------------------------------------------------
+CREATE TABLE `jwt_refresh_tokens` (
+  `id`          INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id`     INT NOT NULL,
+  `token_hash`  VARCHAR(64) NOT NULL,          -- SHA-256 del refresh token
+  `jti`         VARCHAR(64) NOT NULL UNIQUE,   -- JWT ID único
+  `expires_at`  DATETIME NOT NULL,
+  `revoked`     TINYINT(1) DEFAULT 0,
+  `user_agent`  VARCHAR(255) DEFAULT NULL,
+  `ip_address`  VARCHAR(45) DEFAULT NULL,
+  `created_at`  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_user_id`    (`user_id`),
+  INDEX `idx_token_hash` (`token_hash`),
+  INDEX `idx_expires`    (`expires_at`),
+  CONSTRAINT `fk_rt_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------
+-- Tabla: Blacklist de Access Tokens JWT revocados
+-- ---------------------------------------------------------
+CREATE TABLE `jwt_blacklist` (
+  `id`         INT AUTO_INCREMENT PRIMARY KEY,
+  `jti`        VARCHAR(64) NOT NULL UNIQUE,    -- JWT ID del token revocado
+  `expires_at` DATETIME NOT NULL,              -- Para limpieza periódica
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_jti`     (`jti`),
+  INDEX `idx_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------
 -- Tabla: Categorías
@@ -127,7 +185,7 @@ INSERT INTO `menu_items` (`restaurant_id`, `name`, `price`, `description`, `imag
 (6, 'Arepa Rellena Trifásica Campesina', 17800, 'Masa 100% maíz peto blanco huilense asada en parrilla, rellena al tope de chicharrón carnudo bien tostado, carne deshebrada, pollo mechado y guacamole.', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80', 'Maíz 100%, Chicharrón, Guacamole', 'arepas', 1, 1);
 
 -- ---------------------------------------------------------
--- Tabla: Opciones de personalización (Toppings, Panes, Términos, Salsas)
+-- Tabla: Opciones de personalización
 -- ---------------------------------------------------------
 CREATE TABLE `item_options` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -139,18 +197,15 @@ CREATE TABLE `item_options` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `item_options` (`category`, `name`, `price`, `is_default`, `icon`) VALUES
--- Términos de carne
 ('termino', 'Término Medio (Centro rojo y jugoso)', 0, 0, 'radio_button_unchecked'),
 ('termino', 'Tres Cuartos - 3/4 (Punto ideal de la casa)', 0, 1, 'radio_button_checked'),
 ('termino', 'Bien Asada (Completamente cocida a la brasa)', 0, 0, 'radio_button_unchecked'),
 
--- Tipos de Pan
 ('pan', 'Pan Brioche Dorado Tradicional', 0, 1, 'bakery_dining'),
 ('pan', 'Pan Rústico con Ajonjolí Negro', 1500, 0, 'grain'),
 ('pan', 'Pan con Orégano y Queso Parmesano', 2000, 0, 'cookie'),
 ('pan', 'Envoltura de Lechuga Batavia (Sin gluten)', 0, 0, 'eco'),
 
--- Toppings adicionales
 ('topping', 'Tocineta Ahumada Crunch (Extra)', 3500, 0, 'bacon'),
 ('topping', 'Huevo Frito Campesino Yema Tierna', 2000, 0, 'egg'),
 ('topping', 'Queso Campesino Asado de Algeciras', 3000, 0, 'cheese'),
@@ -159,7 +214,6 @@ INSERT INTO `item_options` (`category`, `name`, `price`, `is_default`, `icon`) V
 ('topping', 'Chicharrón Crocante Picado', 4000, 0, 'restaurant'),
 ('topping', 'Papas Fosforito Crujientes', 1200, 0, 'lunch_dining'),
 
--- Salsas colombianas artesanales
 ('salsa', 'Tártara Especial de la Abuela', 0, 1, 'check_box'),
 ('salsa', 'BBQ Artesanal con Guayaba Huilense', 0, 1, 'check_box'),
 ('salsa', 'Salsa de Ajo Suave & Perejil', 0, 0, 'check_box_outline_blank'),
@@ -190,6 +244,7 @@ INSERT INTO `coupons` (`code`, `discount_amount`, `min_purchase`, `description`,
 -- ---------------------------------------------------------
 CREATE TABLE `orders` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT DEFAULT NULL,
   `order_code` VARCHAR(30) NOT NULL UNIQUE,
   `customer_name` VARCHAR(100) NOT NULL,
   `customer_phone` VARCHAR(30) NOT NULL,
@@ -208,6 +263,7 @@ CREATE TABLE `orders` (
   `rider_id` INT DEFAULT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL,
   FOREIGN KEY (`rider_id`) REFERENCES `riders`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -247,8 +303,8 @@ CREATE TABLE `order_tracking_events` (
 -- ---------------------------------------------------------
 -- Datos de prueba para un pedido inicial realista
 -- ---------------------------------------------------------
-INSERT INTO `orders` (`order_code`, `customer_name`, `customer_phone`, `delivery_address`, `comuna`, `delivery_timing`, `instructions`, `payment_method`, `subtotal`, `discount`, `delivery_fee`, `tip`, `total`, `status`, `rider_id`, `created_at`) VALUES
-('#NV-8492', 'Mateo Rodríguez', '+57 314 289 9012', 'Cra. 5 #18-42, Centro, Neiva', 'Comuna 4 - Centro', 'immediate', 'Dejar en recepción con el portero don Hernando', 'nequi', 40900, 5000, 3500, 1000, 40400, 'en_camino', 1, NOW() - INTERVAL 18 MINUTE);
+INSERT INTO `orders` (`user_id`, `order_code`, `customer_name`, `customer_phone`, `delivery_address`, `comuna`, `delivery_timing`, `instructions`, `payment_method`, `subtotal`, `discount`, `delivery_fee`, `tip`, `total`, `status`, `rider_id`, `created_at`) VALUES
+(2, '#NV-8492', 'Mateo Rodríguez', '+57 314 289 9012', 'Cra. 5 #18-42, Centro, Neiva', 'Comuna 4 - Centro', 'immediate', 'Dejar en recepción con el portero don Hernando', 'nequi', 40900, 5000, 3500, 1000, 40400, 'en_camino', 1, NOW() - INTERVAL 18 MINUTE);
 
 INSERT INTO `order_items` (`order_id`, `item_name`, `restaurant_name`, `base_price`, `quantity`, `doneness`, `bread`, `toppings_json`, `sauces_json`, `notes`, `subtotal`) VALUES
 (1, 'Hamburguesa Monumental Huilense 200g', 'La Estación Burger', 24900, 1, 'Tres Cuartos - 3/4', 'Pan Brioche Dorado Tradicional', '[{"name":"Tocineta Ahumada Crunch","price":3500,"count":1},{"name":"Huevo Frito Campesino","price":2000},{"name":"Queso Campesino Asado","price":3000}]', '["Tártara Especial de la Abuela","BBQ Artesanal con Guayaba Huilense"]', 'Cebolla bien caramelizada por favor', 33400),

@@ -1,19 +1,37 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/jwt.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     $db = getDB();
 
+    // Obtener usuario autenticado vía JWT
+    $authUser = JWT::getAuthUser();
+
     if ($method === 'POST') {
         $input = getJsonInput();
         $action = $input['action'] ?? 'update_status';
         $orderId = (int)($input['order_id'] ?? 0);
         $orderCode = trim($input['order_code'] ?? '');
+
+        // Si se intenta acción administrativa sin token de admin y no es auto_advance de demo
+        if ($action !== 'auto_advance' && $authUser && $authUser['role'] !== 'admin' && $authUser['role'] !== 'restaurant') {
+            jsonResponse([
+                'success' => false,
+                'message' => 'Permisos insuficientes. Se requiere rol de Administrador de Restaurante en Neiva.'
+            ], 403);
+        }
 
         if (!$orderId && !empty($orderCode)) {
             $stmtFind = $db->prepare("SELECT id FROM `orders` WHERE `order_code` = :code LIMIT 1");
@@ -102,7 +120,8 @@ try {
             'order_id' => $orderId,
             'previous_status' => $currentOrder['status'],
             'new_status' => $targetStatus,
-            'new_status_title' => $eventInfo['title']
+            'new_status_title' => $eventInfo['title'],
+            'updated_by' => $authUser ? $authUser['name'] : 'Sistema Automático'
         ]);
 
     } elseif ($method === 'GET') {
@@ -146,7 +165,8 @@ try {
             'success' => true,
             'metrics' => $stats,
             'counts' => $ordersByStatus,
-            'orders' => $orders
+            'orders' => $orders,
+            'admin_user' => $authUser
         ]);
     }
 

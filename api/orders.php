@@ -1,8 +1,15 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/jwt.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -12,10 +19,14 @@ try {
     if ($method === 'POST') {
         $input = getJsonInput();
 
-        $customerName = trim($input['customer_name'] ?? 'Cliente Neiva');
-        $customerPhone = trim($input['customer_phone'] ?? '+57 300 000 0000');
-        $address = trim($input['delivery_address'] ?? 'Cra 5 #10-00, Neiva');
-        $comuna = trim($input['comuna'] ?? 'Comuna 4 - Centro');
+        // Obtener usuario autenticado vía JWT (si existe)
+        $authUser = JWT::getAuthUser();
+        $userId = $authUser ? (int)$authUser['id'] : null;
+
+        $customerName = trim($input['customer_name'] ?? ($authUser ? $authUser['name'] : 'Cliente Neiva'));
+        $customerPhone = trim($input['customer_phone'] ?? ($authUser ? $authUser['phone'] : '+57 300 000 0000'));
+        $address = trim($input['delivery_address'] ?? ($authUser ? $authUser['address'] : 'Cra 5 #10-00, Neiva'));
+        $comuna = trim($input['comuna'] ?? ($authUser ? $authUser['comuna'] : 'Comuna 4 - Centro'));
         $timing = in_array($input['delivery_timing'] ?? '', ['immediate', 'scheduled']) ? $input['delivery_timing'] : 'immediate';
         $instructions = trim($input['instructions'] ?? '');
         $paymentMethod = $input['payment_method'] ?? 'nequi';
@@ -76,17 +87,18 @@ try {
 
         $stmtOrder = $db->prepare("
             INSERT INTO `orders` (
-                `order_code`, `customer_name`, `customer_phone`, `delivery_address`, `comuna`,
+                `user_id`, `order_code`, `customer_name`, `customer_phone`, `delivery_address`, `comuna`,
                 `delivery_timing`, `instructions`, `payment_method`, `cash_change_for`,
                 `subtotal`, `discount`, `delivery_fee`, `tip`, `total`, `status`, `rider_id`
             ) VALUES (
-                :code, :cname, :cphone, :addr, :comuna,
+                :uid, :code, :cname, :cphone, :addr, :comuna,
                 :timing, :instructions, :pmethod, :cchange,
                 :subtotal, :discount, :fee, :tip, :total, 'recibido', :rider_id
             )
         ");
 
         $stmtOrder->execute([
+            ':uid' => $userId,
             ':code' => $orderCode,
             ':cname' => $customerName,
             ':cphone' => $customerPhone,
@@ -173,12 +185,35 @@ try {
             'message' => '¡Pedido creado y confirmado exitosamente en Neiva!',
             'order_id' => $orderId,
             'order_code' => $orderCode,
+            'user_id' => $userId,
             'total' => $total,
             'total_formatted' => '$' . number_format($total, 0, ',', '.'),
             'status' => 'recibido'
         ]);
 
     } elseif ($method === 'GET') {
+        // Consultar mis pedidos (Protegido por JWT)
+        if (isset($_GET['my_orders'])) {
+            $user = JWT::requireAuth();
+            $stmt = $db->prepare("
+                SELECT o.*, COUNT(i.id) as total_items
+                FROM `orders` o
+                LEFT JOIN `order_items` i ON o.id = i.order_id
+                WHERE o.user_id = :uid OR o.customer_phone = :phone
+                GROUP BY o.id
+                ORDER BY o.created_at DESC
+                LIMIT 20
+            ");
+            $stmt->execute([':uid' => $user['id'], ':phone' => $user['phone']]);
+            $orders = $stmt->fetchAll();
+
+            foreach ($orders as &$ord) {
+                $ord['total_formatted'] = '$' . number_format($ord['total'], 0, ',', '.');
+            }
+
+            jsonResponse(['success' => true, 'orders' => $orders]);
+        }
+
         $code = trim($_GET['code'] ?? '');
         $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 

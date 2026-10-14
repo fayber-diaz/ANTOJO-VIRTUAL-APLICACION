@@ -634,25 +634,28 @@ const App = {
       return;
     }
 
-    const customerName = document.getElementById('customer-name')?.value || 'Mateo Rodríguez';
-    const customerPhone = document.getElementById('customer-phone')?.value || '+57 314 289 9012';
-    const deliveryAddress = document.getElementById('delivery-address')?.value || 'Cra. 5 #18-42, Centro';
-    const comuna = document.getElementById('delivery-comuna')?.value || this.state.selectedComuna;
-    const instructions = document.getElementById('delivery-instructions')?.value || '';
-    const paymentMethod = document.querySelector('.pay-card.active')?.dataset.method || 'nequi';
-    const cashChange = document.getElementById('cash-change-select')?.value || 'exacto';
+    // Pre-rellenar con datos del usuario autenticado si está logueado
+    const authUser = (typeof Auth !== 'undefined' && Auth.isAuthenticated()) ? Auth.getUser() : null;
+
+    const customerName    = document.getElementById('customer-name')?.value    || authUser?.name    || 'Mateo Rodríguez';
+    const customerPhone   = document.getElementById('customer-phone')?.value   || authUser?.phone   || '+57 314 289 9012';
+    const deliveryAddress = document.getElementById('delivery-address')?.value || authUser?.address || 'Cra. 5 #18-42, Centro';
+    const comuna          = document.getElementById('delivery-comuna')?.value  || authUser?.comuna  || this.state.selectedComuna;
+    const instructions    = document.getElementById('delivery-instructions')?.value || '';
+    const paymentMethod   = document.querySelector('.pay-card.active')?.dataset.method || 'nequi';
+    const cashChange      = document.getElementById('cash-change-select')?.value || 'exacto';
 
     const payload = {
-      customer_name: customerName,
-      customer_phone: customerPhone,
+      customer_name:    customerName,
+      customer_phone:   customerPhone,
       delivery_address: deliveryAddress,
-      comuna: comuna,
-      delivery_timing: 'immediate',
-      instructions: instructions,
-      payment_method: paymentMethod,
-      cash_change_for: cashChange,
-      coupon_code: this.state.appliedCoupon?.code || '',
-      items: this.state.cart
+      comuna:           comuna,
+      delivery_timing:  'immediate',
+      instructions:     instructions,
+      payment_method:   paymentMethod,
+      cash_change_for:  cashChange,
+      coupon_code:      this.state.appliedCoupon?.code || '',
+      items:            this.state.cart
     };
 
     const confirmBtn = document.getElementById('btn-confirm-order-action');
@@ -662,7 +665,9 @@ const App = {
     }
 
     try {
-      const res = await fetch('api/orders.php', {
+      // Usar Auth.fetch para incluir el JWT automáticamente
+      const fetcher = (typeof Auth !== 'undefined') ? Auth.fetch.bind(Auth) : fetch;
+      const res = await fetcher('api/orders.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -902,7 +907,8 @@ const App = {
   async autoAdvanceDemoOrder() {
     const code = this.state.currentOrder?.order_code || localStorage.getItem('antojo_active_order_code') || '#NV-8492';
     try {
-      const res = await fetch('api/admin.php', {
+      const fetcher = (typeof Auth !== 'undefined') ? Auth.fetch.bind(Auth) : fetch;
+      const res = await fetcher('api/admin.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'auto_advance', order_code: code })

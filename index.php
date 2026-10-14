@@ -19,6 +19,7 @@ $db = getDB();
   
   <!-- Hojas de Estilos Neumórficas -->
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
 
@@ -64,6 +65,9 @@ $db = getDB();
 
         <!-- Acciones del Header -->
         <div class="header-actions">
+          <!-- Auth JWT: Botón de usuario / login -->
+          <div id="header-auth-btn"></div>
+
           <a href="admin.php" class="btn-admin-link" title="Ir al panel de cocina y pedidos">
             <span class="material-symbols-outlined" style="font-size: 18px; color: #dc2626;">kitchen</span>
             <span>Panel Cocina</span>
@@ -726,7 +730,8 @@ $db = getDB();
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Scripts: Auth (JWT) carga primero, App después -->
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
