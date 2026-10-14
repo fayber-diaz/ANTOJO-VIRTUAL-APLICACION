@@ -2,7 +2,7 @@
  * =========================================================
  * ANTOJO VIRTUAL - JavaScript Principal (Vanilla ES6)
  * Conectado a PHP REST API y MySQL en XAMPP
- * Neiva, Huila
+ * Neiva, Huila • Diseño Neumorfismo (Soft UI)
  * =========================================================
  */
 
@@ -25,7 +25,7 @@ const App = {
     customizerSelection: {
       termino: '',
       bread: '',
-      toppings: {}, // { 'Tocineta Ahumada Crunch': { price: 3500, count: 1 } }
+      toppings: {},
       sauces: [],
       notes: ''
     },
@@ -165,17 +165,17 @@ const App = {
     }
   },
 
-  // Renderizar Restaurantes
+  // Renderizar Restaurantes Neumórficos
   renderRestaurants() {
     const container = document.getElementById('restaurants-container');
     if (!container) return;
 
     if (this.state.restaurants.length === 0) {
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #ffffff; border-radius: 1rem; border: 1px dashed #e7eeff;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--neu-bg); border-radius: var(--radius-lg); box-shadow: var(--neu-inset); border: 1px solid var(--color-border-subtle);">
           <span class="material-symbols-outlined" style="font-size: 48px; color: #dc2626;">search_off</span>
-          <h3 style="font-family: var(--font-epilogue); margin: 0.5rem 0;">No encontramos restaurantes para tu búsqueda</h3>
-          <p style="color: #5c403c; font-size: 0.9rem;">Prueba con otra palabra clave o selecciona otra categoría.</p>
+          <h3 style="font-family: var(--font-epilogue); margin: 0.5rem 0; color: var(--color-on-surface);">No encontramos restaurantes para tu búsqueda</h3>
+          <p style="color: var(--color-on-surface-variant); font-size: 0.9rem;">Prueba con otra palabra clave o selecciona otra categoría.</p>
         </div>
       `;
       return;
@@ -193,37 +193,37 @@ const App = {
         <div class="dish-content">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
             <h3 class="dish-title" style="margin: 0;">${r.name}</h3>
-            <div style="display: flex; align-items: center; gap: 0.2rem; background: #fff8eb; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 800; color: #855300;">
-              <span class="material-symbols-outlined" style="font-size: 14px; color: #fea619;">star</span>
+            <div style="display: flex; align-items: center; gap: 0.2rem; background: var(--neu-bg); box-shadow: var(--neu-inset-sm); padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 800; color: #855300; border: 1px solid var(--color-border-subtle);">
+              <span class="material-symbols-outlined" style="font-size: 15px; color: #fea619;">star</span>
               ${r.rating} (${r.reviews_count}+)
             </div>
           </div>
           <p class="dish-desc">${r.description}</p>
-          <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: #5c403c; font-weight: 600; margin-bottom: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; color: var(--color-on-surface-variant); font-weight: 700; margin-bottom: 0.85rem;">
             <span><span class="material-symbols-outlined" style="font-size: 15px;">schedule</span> ${r.delivery_time}</span>
             <span><span class="material-symbols-outlined" style="font-size: 15px;">moped</span> ${r.delivery_fee_formatted}</span>
             <span><span class="material-symbols-outlined" style="font-size: 15px;">location_on</span> ${r.address}</span>
           </div>
-          <div style="background: #f0f3ff; padding: 0.65rem 0.85rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.8rem; font-weight: 700; color: #111c2d;">⭐ ${r.star_dish}</span>
-            <span style="font-weight: 800; color: #dc2626; font-size: 0.85rem;">${r.star_price_formatted}</span>
+          <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); border: 1px solid var(--color-border-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--color-on-surface);">⭐ ${r.star_dish}</span>
+            <span style="font-weight: 900; color: var(--color-primary-container); font-size: 0.9rem;">${r.star_price_formatted}</span>
           </div>
         </div>
       </div>
     `).join('');
   },
 
-  // Renderizar Platos
+  // Renderizar Platos Neumórficos
   renderDishes() {
     const container = document.getElementById('dishes-container');
     if (!container) return;
 
     if (this.state.dishes.length === 0) {
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #ffffff; border-radius: 1rem; border: 1px dashed #e7eeff;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--neu-bg); border-radius: var(--radius-lg); box-shadow: var(--neu-inset); border: 1px solid var(--color-border-subtle);">
           <span class="material-symbols-outlined" style="font-size: 48px; color: #fea619;">fastfood</span>
-          <h3 style="font-family: var(--font-epilogue); margin: 0.5rem 0;">No se encontraron platos</h3>
-          <p style="color: #5c403c; font-size: 0.9rem;">Intenta borrar el filtro de búsqueda para ver todo el menú.</p>
+          <h3 style="font-family: var(--font-epilogue); margin: 0.5rem 0; color: var(--color-on-surface);">No se encontraron platos</h3>
+          <p style="color: var(--color-on-surface-variant); font-size: 0.9rem;">Intenta borrar el filtro de búsqueda para ver todo el menú.</p>
         </div>
       `;
       return;
@@ -234,8 +234,8 @@ const App = {
         <div class="dish-image-wrapper">
           <img src="${d.image}" alt="${d.name}" class="dish-img" loading="lazy">
           ${d.is_featured ? `
-            <div class="dish-badge" style="background: rgba(220, 38, 38, 0.9);">
-              <span class="material-symbols-outlined" style="font-size: 15px;">local_fire_department</span>
+            <div class="dish-badge" style="background: rgba(220, 38, 38, 0.9); color: white;">
+              <span class="material-symbols-outlined" style="font-size: 15px; color: #fea619;">local_fire_department</span>
               Especialidad al Carbón
             </div>
           ` : ''}
@@ -303,10 +303,10 @@ const App = {
       <div class="option-row ${this.state.customizerSelection.termino === t.name ? 'selected' : ''}" 
            onclick="App.selectTermino('${t.name}')">
         <div class="option-left">
-          <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.termino === t.name ? '#dc2626' : '#5c403c'};">
+          <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.termino === t.name ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
             ${this.state.customizerSelection.termino === t.name ? 'radio_button_checked' : 'radio_button_unchecked'}
           </span>
-          <span style="font-weight: 600; font-size: 0.9rem;">${t.name}</span>
+          <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${t.name}</span>
         </div>
         <span class="option-price">${t.price_formatted}</span>
       </div>
@@ -318,10 +318,10 @@ const App = {
       <div class="option-row ${this.state.customizerSelection.bread === p.name ? 'selected' : ''}" 
            onclick="App.selectBread('${p.name}')">
         <div class="option-left">
-          <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.bread === p.name ? '#dc2626' : '#5c403c'};">
+          <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.bread === p.name ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
             ${this.state.customizerSelection.bread === p.name ? 'radio_button_checked' : 'radio_button_unchecked'}
           </span>
-          <span style="font-weight: 600; font-size: 0.9rem;">${p.name}</span>
+          <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${p.name}</span>
         </div>
         <span class="option-price">${p.price_formatted}</span>
       </div>
@@ -334,10 +334,10 @@ const App = {
       return `
         <div class="option-row ${currentCount > 0 ? 'selected' : ''}">
           <div class="option-left">
-            <span class="material-symbols-outlined" style="color: #fea619;">check_circle</span>
+            <span class="material-symbols-outlined" style="color: #fea619; font-size: 22px;">check_circle</span>
             <div>
-              <div style="font-weight: 700; font-size: 0.9rem;">${top.name}</div>
-              <div style="font-size: 0.8rem; color: #dc2626; font-weight: 600;">${top.price_formatted}</div>
+              <div style="font-weight: 800; font-size: 0.9rem; color: var(--color-on-surface);">${top.name}</div>
+              <div style="font-size: 0.8rem; color: #dc2626; font-weight: 700;">${top.price_formatted}</div>
             </div>
           </div>
           <div class="counter-box">
@@ -356,12 +356,12 @@ const App = {
       return `
         <div class="option-row ${isChecked ? 'selected' : ''}" onclick="App.toggleSauce('${s.name}')">
           <div class="option-left">
-            <span class="material-symbols-outlined" style="color: ${isChecked ? '#dc2626' : '#5c403c'};">
+            <span class="material-symbols-outlined" style="color: ${isChecked ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
               ${isChecked ? 'check_box' : 'check_box_outline_blank'}
             </span>
-            <span style="font-weight: 600; font-size: 0.9rem;">${s.name}</span>
+            <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${s.name}</span>
           </div>
-          <span style="font-size: 0.75rem; color: #1a8340; font-weight: 700;">Gratis</span>
+          <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
         </div>
       `;
     }).join('');
@@ -406,13 +406,11 @@ const App = {
 
     let total = dish.price;
 
-    // Costo de pan si tiene costo adicional
     const selectedBreadObj = this.state.customizerOptions.panes.find(p => p.name === this.state.customizerSelection.bread);
     if (selectedBreadObj) {
       total += selectedBreadObj.price;
     }
 
-    // Costo de toppings seleccionados
     for (const key in this.state.customizerSelection.toppings) {
       const top = this.state.customizerSelection.toppings[key];
       total += (top.price * top.count);
@@ -429,7 +427,6 @@ const App = {
 
     const notes = document.getElementById('modal-notes-input')?.value || '';
 
-    // Convertir toppings objeto a array
     const toppingsArray = [];
     for (const name in this.state.customizerSelection.toppings) {
       const t = this.state.customizerSelection.toppings[name];
@@ -489,21 +486,21 @@ const App = {
     this.showToast('Producto eliminado del carrito');
   },
 
-  // Pantalla de Checkout
+  // Pantalla de Checkout Neumórfica
   renderCheckout() {
     const itemsList = document.getElementById('checkout-items-list');
     if (!itemsList) return;
 
     if (this.state.cart.length === 0) {
       itemsList.innerHTML = `
-        <div style="text-align: center; padding: 2.5rem; color: #5c403c;">
+        <div style="text-align: center; padding: 2.5rem; color: var(--color-on-surface-variant);">
           <span class="material-symbols-outlined" style="font-size: 48px; color: #fea619;">shopping_cart</span>
-          <h3 style="font-family: var(--font-epilogue); margin-top: 0.5rem;">Tu carrito está vacío</h3>
-          <p style="font-size: 0.9rem; margin-bottom: 1rem;">Explora los deliciosos platos de Neiva y agrégalos a tu orden.</p>
+          <h3 style="font-family: var(--font-epilogue); margin-top: 0.5rem; color: var(--color-on-surface);">Tu carrito está vacío</h3>
+          <p style="font-size: 0.9rem; margin-bottom: 1.25rem;">Explora los deliciosos platos de Neiva y agrégalos a tu orden.</p>
           <button class="btn-customize" onclick="App.navigate('explorar')">Ver Menú Completo</button>
         </div>
       `;
-      this.updateCheckoutTotals(0, 0, 0, 0);
+      this.updateCheckoutTotals(0, 0, 0, 0, 0);
       return;
     }
 
@@ -522,26 +519,26 @@ const App = {
       subtotalToppings += (toppingsCost * item.quantity);
 
       return `
-        <div style="padding: 1.25rem 0; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+        <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-weight: 800; color: #dc2626;">${item.quantity}x</span>
-              <h4 style="font-family: var(--font-epilogue); font-size: 1.05rem; font-weight: 800; color: #111c2d;">${item.name}</h4>
+              <span style="font-weight: 900; color: #dc2626;">${item.quantity}x</span>
+              <h4 style="font-family: var(--font-epilogue); font-size: 1.1rem; font-weight: 800; color: var(--color-on-surface);">${item.name}</h4>
             </div>
-            <span style="font-size: 0.8rem; font-weight: 700; color: #5c403c; text-transform: uppercase;">${item.restaurant}</span>
+            <span style="font-size: 0.8rem; font-weight: 800; color: #fea619; text-transform: uppercase;">${item.restaurant}</span>
 
-            ${item.doneness ? `<div style="font-size: 0.8rem; color: #5c403c; margin-top: 0.25rem;">🥩 <strong>Término:</strong> ${item.doneness}</div>` : ''}
-            ${item.bread ? `<div style="font-size: 0.8rem; color: #5c403c;">🍞 <strong>Pan:</strong> ${item.bread}</div>` : ''}
+            ${item.doneness ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">🥩 <strong>Término:</strong> ${item.doneness}</div>` : ''}
+            ${item.bread ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant);">🍞 <strong>Pan:</strong> ${item.bread}</div>` : ''}
 
             ${item.toppings && item.toppings.length > 0 ? `
-              <div style="margin-top: 0.35rem; font-size: 0.8rem; color: #111c2d;">
+              <div style="margin-top: 0.35rem; font-size: 0.8rem; color: var(--color-on-surface);">
                 <strong>Toppings extras:</strong>
-                ${item.toppings.map(t => `<span class="dish-tag-item" style="background:#e7eeff; margin-right:4px;">+ ${t.name} ($${(t.price).toLocaleString('es-CO')})</span>`).join('')}
+                ${item.toppings.map(t => `<span class="dish-tag-item" style="margin-right:4px;">+ ${t.name} ($${(t.price).toLocaleString('es-CO')})</span>`).join('')}
               </div>
             ` : ''}
 
             ${item.sauces && item.sauces.length > 0 ? `
-              <div style="font-size: 0.8rem; color: #00682e; margin-top: 0.25rem;">
+              <div style="font-size: 0.8rem; color: #1a8340; margin-top: 0.25rem;">
                 <strong>Salsas:</strong> ${item.sauces.join(', ')}
               </div>
             ` : ''}
@@ -550,15 +547,15 @@ const App = {
           </div>
 
           <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-            <span style="font-family: var(--font-epilogue); font-weight: 800; font-size: 1.1rem; color: #111c2d;">
+            <span style="font-family: var(--font-epilogue); font-weight: 900; font-size: 1.15rem; color: var(--color-on-surface);">
               $${itemSubtotal.toLocaleString('es-CO')}
             </span>
-            <div class="counter-box" style="scale: 0.9;">
+            <div class="counter-box" style="scale: 0.95;">
               <button class="counter-btn" onclick="App.updateCartItemQty(${idx}, -1)">-</button>
               <span class="counter-value">${item.quantity}</span>
               <button class="counter-btn" onclick="App.updateCartItemQty(${idx}, 1)">+</button>
             </div>
-            <button onclick="App.removeCartItem(${idx})" style="background:none; border:none; color:#dc2626; font-size:0.75rem; font-weight:700; cursor:pointer;">
+            <button onclick="App.removeCartItem(${idx})" style="background:none; border:none; color:#dc2626; font-size:0.75rem; font-weight:800; cursor:pointer;">
               Eliminar
             </button>
           </div>
@@ -582,7 +579,6 @@ const App = {
     document.getElementById('summary-total').textContent = '$' + total.toLocaleString('es-CO');
     document.getElementById('btn-confirm-total').textContent = '$' + total.toLocaleString('es-CO');
 
-    // Descuento row
     const discountRow = document.getElementById('summary-discount-row');
     if (discountRow) {
       discountRow.style.display = discount > 0 ? 'flex' : 'none';
@@ -676,10 +672,8 @@ const App = {
       if (data.success) {
         this.showToast('¡Pedido guardado en MySQL con éxito! Conectando con repartidor...');
         
-        // Guardar código del pedido activo para rastreo
         localStorage.setItem('antojo_active_order_code', data.order_code);
 
-        // Limpiar carrito
         this.state.cart = [];
         this.saveCartToStorage();
         this.renderCartBadge();
@@ -723,7 +717,6 @@ const App = {
 
   startTrackingPolling() {
     this.stopTrackingPolling();
-    // Consultar estado cada 5 segundos
     this.state.trackingInterval = setInterval(() => {
       const code = this.state.currentOrder?.order_code || localStorage.getItem('antojo_active_order_code') || '#NV-8492';
       this.fetchOrderForTracking(code, false);
@@ -747,7 +740,6 @@ const App = {
     document.getElementById('track-eta').textContent = order.eta_minutes;
     document.getElementById('track-progress-bar').style.width = order.progress_percent + '%';
 
-    // Actualizar stepper
     const stepIdx = order.step_index;
     for (let i = 0; i <= 3; i++) {
       const stepEl = document.getElementById(`track-step-${i}`);
@@ -761,7 +753,6 @@ const App = {
       }
     }
 
-    // Datos del Rider
     if (order.rider) {
       document.getElementById('track-rider-name').textContent = order.rider.name;
       document.getElementById('track-rider-vehicle').textContent = `${order.rider.vehicle} (${order.rider.plate})`;
@@ -772,53 +763,50 @@ const App = {
       document.getElementById('track-rider-call').href = `tel:${order.rider.phone.replace(/[^0-9]/g, '')}`;
     }
 
-    // Resumen de ítems en rastreo
     const trackItemsContainer = document.getElementById('track-order-items');
     if (trackItemsContainer && order.items) {
       trackItemsContainer.innerHTML = order.items.map(it => `
-        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--color-border); font-size: 0.85rem;">
+        <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: 0.85rem 1.15rem; margin-bottom: 0.65rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
           <div>
-            <strong>${it.quantity}x ${it.item_name}</strong>
-            ${it.doneness ? `<div style="font-size: 0.75rem; color: #5c403c;">${it.doneness}</div>` : ''}
+            <strong style="color: var(--color-on-surface);">${it.quantity}x ${it.item_name}</strong>
+            ${it.doneness ? `<div style="font-size: 0.75rem; color: var(--color-on-surface-variant);">${it.doneness}</div>` : ''}
           </div>
-          <span style="font-weight: 700;">${it.subtotal_formatted}</span>
+          <span style="font-weight: 800; color: var(--color-on-surface);">${it.subtotal_formatted}</span>
         </div>
       `).join('');
     }
 
-    // Total y dirección
     document.getElementById('track-order-total').textContent = order.payment?.total_formatted || '$0';
     document.getElementById('track-order-address').textContent = `${order.customer?.address} (${order.customer?.comuna})`;
 
-    // Dibujar mapa interactivo simulado de Neiva
     this.renderNeivaMap(order);
   },
 
-  // Simulación del mapa de Neiva con Canvas
+  // Simulación del mapa de Neiva Neumórfico con Canvas
   renderNeivaMap(order) {
     const canvas = document.getElementById('neiva-map-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = canvas.width = canvas.parentElement.clientWidth || 600;
-    const h = canvas.height = 300;
+    const h = canvas.height = 330;
 
-    // Fondo estilo mapa moderno (calles y ríos de Neiva)
-    ctx.fillStyle = '#f1f5f9';
+    // Fondo estilo mapa de arcilla suave neumórfica
+    ctx.fillStyle = '#e5ebf3';
     ctx.fillRect(0, 0, w, h);
 
     // Río Magdalena (fluyendo por la izquierda)
     ctx.beginPath();
     ctx.moveTo(w * 0.1, 0);
     ctx.bezierCurveTo(w * 0.15, h * 0.4, w * 0.08, h * 0.7, w * 0.18, h);
-    ctx.lineWidth = 18;
+    ctx.lineWidth = 22;
     ctx.strokeStyle = '#bae6fd';
     ctx.stroke();
 
     // Calles principales de Neiva (Av. Circunvalar, Cra 5, Calle 8, Calle 10)
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#f4f8fd';
 
-    // Av. Circunvalar (paralela al río)
+    // Av. Circunvalar
     ctx.beginPath();
     ctx.moveTo(w * 0.25, 0);
     ctx.bezierCurveTo(w * 0.28, h * 0.5, w * 0.25, h * 0.8, w * 0.32, h);
@@ -849,27 +837,27 @@ const App = {
     const restX = w * 0.35;
     const restY = h * 0.7;
     ctx.beginPath();
-    ctx.arc(restX, restY, 10, 0, Math.PI * 2);
+    ctx.arc(restX, restY, 12, 0, Math.PI * 2);
     ctx.fillStyle = '#fea619';
     ctx.fill();
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
     ctx.fillStyle = '#111c2d';
-    ctx.fillText('🍔 La Estación', restX - 35, restY + 22);
+    ctx.fillText('🍔 La Estación', restX - 35, restY + 24);
 
     // Punto B: Destino Cliente
     const destX = w * 0.75;
     const destY = h * 0.35;
     ctx.beginPath();
-    ctx.arc(destX, destY, 10, 0, Math.PI * 2);
+    ctx.arc(destX, destY, 12, 0, Math.PI * 2);
     ctx.fillStyle = '#dc2626';
     ctx.fill();
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
     ctx.fillStyle = '#111c2d';
-    ctx.fillText('🏠 Tu Dirección', destX - 35, destY - 14);
+    ctx.fillText('🏠 Tu Dirección', destX - 35, destY - 16);
 
     // Ruta trazada entre restaurante y cliente
     ctx.beginPath();
@@ -878,7 +866,7 @@ const App = {
     ctx.lineTo(restX, destY);
     ctx.lineTo(destX, destY);
     ctx.strokeStyle = '#dc2626';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -886,28 +874,28 @@ const App = {
     let riderX = restX;
     let riderY = restY;
     if (order.status === 'preparando') {
-      riderX = restX + 15;
+      riderX = restX + 20;
       riderY = restY;
     } else if (order.status === 'en_camino') {
-      riderX = restX + (destX - restX) * 0.55;
+      riderX = restX + (destX - restX) * 0.58;
       riderY = destY;
     } else if (order.status === 'entregado') {
       riderX = destX;
       riderY = destY;
     }
 
-    // Dibujar icono de moto del rider
+    // Dibujar pin neumórfico de moto del rider
     ctx.beginPath();
-    ctx.arc(riderX, riderY, 14, 0, Math.PI * 2);
-    ctx.fillStyle = '#111c2d';
+    ctx.arc(riderX, riderY, 16, 0, Math.PI * 2);
+    ctx.fillStyle = '#192537';
     ctx.fill();
     ctx.strokeStyle = '#fea619';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('🛵', riderX - 8, riderY + 4);
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText('🛵', riderX - 9, riderY + 5);
   },
 
   // Simulación rápida de avance de orden (para demostración al cliente)
@@ -949,7 +937,7 @@ const App = {
     }
   },
 
-  // Toast flotante
+  // Toast flotante Neumórfico
   showToast(msg) {
     let toast = document.getElementById('app-toast');
     if (!toast) {
@@ -960,7 +948,7 @@ const App = {
     }
     toast.innerHTML = `
       <span class="material-symbols-outlined" style="color: #fea619;">info</span>
-      <span style="font-weight: 600; font-size: 0.9rem;">${msg}</span>
+      <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${msg}</span>
     `;
     toast.style.display = 'flex';
     clearTimeout(this._toastTimer);
@@ -971,7 +959,6 @@ const App = {
 
   // Configuración de listeners
   setupEventListeners() {
-    // Input de búsqueda con debounce
     const searchInput = document.getElementById('search-input');
     let debounceTimer;
     if (searchInput) {
@@ -985,7 +972,6 @@ const App = {
       });
     }
 
-    // Selector de comuna en el header
     const comunaSelect = document.getElementById('header-comuna-select');
     if (comunaSelect) {
       comunaSelect.addEventListener('change', (e) => {
@@ -994,13 +980,11 @@ const App = {
       });
     }
 
-    // Métodos de pago en Checkout
     document.querySelectorAll('.pay-card').forEach(card => {
       card.addEventListener('click', () => {
         document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('active'));
         card.classList.add('active');
 
-        // Mostrar opciones de efectivo si es efectivo
         const isCash = card.dataset.method === 'cash_efectivo';
         const cashBox = document.getElementById('cash-change-box');
         if (cashBox) {
@@ -1009,7 +993,6 @@ const App = {
       });
     });
 
-    // Copiar cupón del hero
     const copyBtn = document.getElementById('btn-hero-copy-coupon');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
@@ -1024,7 +1007,6 @@ const App = {
   }
 };
 
-// Arrancar al cargar el DOM
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
 });

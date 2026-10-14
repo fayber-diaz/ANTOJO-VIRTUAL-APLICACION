@@ -71,7 +71,7 @@ foreach ($orders as &$ord) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Cocina & Pedidos | ANTOJO VIRTUAL</title>
+  <title>Panel de Cocina & Pedidos (Neumorfismo) | ANTOJO VIRTUAL</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -82,65 +82,70 @@ foreach ($orders as &$ord) {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.35rem 0.75rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 9999px;
       font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      box-shadow: var(--neu-inset-sm);
+      border: 1px solid var(--color-border-subtle);
     }
-    .status-recibido { background: #d8e3fb; color: #111c2d; }
-    .status-preparando { background: #fff8eb; color: #855300; border: 1px solid #fea619; }
-    .status-en_camino { background: #fff6f5; color: #dc2626; border: 1px solid #dc2626; }
-    .status-entregado { background: #e7ffe5; color: #00682e; border: 1px solid #79db8d; }
-    .status-cancelado { background: #ffdad6; color: #93000a; }
+    .status-recibido { background: var(--neu-bg); color: #192537; }
+    .status-preparando { background: var(--neu-bg); color: #855300; border-color: rgba(254, 166, 25, 0.4); }
+    .status-en_camino { background: var(--neu-bg); color: #dc2626; border-color: rgba(220, 38, 38, 0.4); }
+    .status-entregado { background: var(--neu-bg); color: #00682e; border-color: rgba(26, 131, 64, 0.4); }
+    .status-cancelado { background: var(--neu-bg); color: #93000a; }
 
     .action-btn-sm {
       border: none;
-      padding: 0.4rem 0.85rem;
-      border-radius: 0.6rem;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius-sm);
       font-family: inherit;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 800;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.4rem;
+      box-shadow: var(--neu-extruded-sm);
+      border: 1px solid var(--color-border-subtle);
       transition: all 0.2s ease;
     }
-    .btn-prep { background: #fea619; color: #111c2d; }
-    .btn-prep:hover { background: #ffb95f; }
-    .btn-ship { background: #dc2626; color: white; }
-    .btn-ship:hover { background: #b70011; }
-    .btn-done { background: #1a8340; color: white; }
-    .btn-done:hover { background: #00682e; }
+    .action-btn-sm:active {
+      box-shadow: var(--neu-inset-sm);
+      transform: translateY(1px);
+    }
+    .btn-prep { background: var(--color-secondary-neu); color: #ffffff; }
+    .btn-ship { background: var(--color-primary-neu); color: white; }
+    .btn-done { background: linear-gradient(145deg, #1fa350, #146b34); color: white; }
   </style>
 </head>
-<body style="background: #f0f3ff;">
+<body style="background: var(--neu-bg);">
 
-  <!-- Header Superior -->
-  <header style="background: #111c2d; color: white; padding: 1rem 0; box-shadow: var(--shadow-md);">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
+  <!-- Header Superior Neumórfico -->
+  <header class="header-top">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem 0;">
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
         <div class="brand-icon">
-          <span class="material-symbols-outlined" style="font-size: 24px;">kitchen</span>
+          <span class="material-symbols-outlined" style="font-size: 26px;">kitchen</span>
         </div>
         <div>
-          <h1 style="font-family: var(--font-epilogue); font-size: 1.35rem; font-weight: 900; margin: 0;">
+          <h1 style="font-family: var(--font-epilogue); font-size: 1.35rem; font-weight: 900; margin: 0; color: var(--color-on-surface);">
             Panel de Cocina & Pedidos
           </h1>
-          <span style="font-size: 0.75rem; color: #fea619; font-weight: 700; text-transform: uppercase;">
-            ANTOJO VIRTUAL • Restaurantes Neiva
+          <span style="font-size: 0.75rem; color: #dc2626; font-weight: 800; text-transform: uppercase;">
+            ANTOJO VIRTUAL • Restaurantes Neiva (Soft UI)
           </span>
         </div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <a href="index.php" class="btn-customize" style="background: #ffffff; color: #111c2d; text-decoration: none;">
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
+        <a href="index.php" class="btn-customize" style="background: var(--neu-bg); color: var(--color-on-surface); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); text-decoration: none;">
           <span class="material-symbols-outlined" style="color: #dc2626;">storefront</span>
           Ver Aplicación Cliente
         </a>
-        <a href="install.php" class="btn-customize" style="background: rgba(255,255,255,0.15); color: white; text-decoration: none;">
+        <a href="install.php" class="btn-customize" style="background: var(--neu-bg); color: var(--color-on-surface-variant); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); text-decoration: none;">
           <span class="material-symbols-outlined">settings</span>
           Base de Datos
         </a>
@@ -148,160 +153,160 @@ foreach ($orders as &$ord) {
     </div>
   </header>
 
-  <main class="container" style="margin-top: 2rem; margin-bottom: 3rem;">
+  <main class="container" style="margin-top: 2rem; margin-bottom: 3.5rem;">
 
     <?php if ($actionMessage): ?>
-      <div style="background: #e7ffe5; color: #00682e; border: 1px solid #79db8d; padding: 1rem 1.25rem; border-radius: 1rem; margin-bottom: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
-        <span class="material-symbols-outlined">check_circle</span>
+      <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); border: 1px solid rgba(26, 131, 64, 0.3); color: #00682e; padding: 1.15rem 1.5rem; border-radius: var(--radius-md); margin-bottom: 2rem; font-weight: 800; display: flex; align-items: center; gap: 0.65rem;">
+        <span class="material-symbols-outlined" style="color: #1a8340;">check_circle</span>
         <span><?php echo htmlspecialchars($actionMessage); ?></span>
       </div>
     <?php endif; ?>
 
-    <!-- Métricas del Restaurante en Neiva -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-      <div style="background: white; padding: 1.5rem; border-radius: 1.25rem; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
-        <div style="font-size: 0.8rem; font-weight: 700; color: #5c403c; text-transform: uppercase;">Total de Ventas (COP)</div>
-        <div style="font-family: var(--font-epilogue); font-size: 1.85rem; font-weight: 900; color: #1a8340; margin-top: 0.25rem;">
+    <!-- Métricas del Restaurante en Neiva Neumórficas -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+      <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 0.8rem; font-weight: 800; color: var(--color-on-surface-variant); text-transform: uppercase;">Total de Ventas (COP)</div>
+        <div style="font-family: var(--font-epilogue); font-size: 1.95rem; font-weight: 900; color: #1a8340; margin-top: 0.35rem;">
           $<?php echo number_format($totalRevenue, 0, ',', '.'); ?>
         </div>
-        <div style="font-size: 0.75rem; color: #5c403c; margin-top: 0.25rem;">Facturado en Neiva</div>
+        <div style="font-size: 0.75rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">Facturado en Neiva</div>
       </div>
 
-      <div style="background: white; padding: 1.5rem; border-radius: 1.25rem; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
-        <div style="font-size: 0.8rem; font-weight: 700; color: #5c403c; text-transform: uppercase;">Pedidos Activos</div>
-        <div style="font-family: var(--font-epilogue); font-size: 1.85rem; font-weight: 900; color: #dc2626; margin-top: 0.25rem;">
+      <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 0.8rem; font-weight: 800; color: var(--color-on-surface-variant); text-transform: uppercase;">Pedidos Activos</div>
+        <div style="font-family: var(--font-epilogue); font-size: 1.95rem; font-weight: 900; color: #dc2626; margin-top: 0.35rem;">
           <?php echo $activeOrders; ?>
         </div>
-        <div style="font-size: 0.75rem; color: #5c403c; margin-top: 0.25rem;">En cola, cocción o ruta</div>
+        <div style="font-size: 0.75rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">En cola, cocción o ruta</div>
       </div>
 
-      <div style="background: white; padding: 1.5rem; border-radius: 1.25rem; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
-        <div style="font-size: 0.8rem; font-weight: 700; color: #5c403c; text-transform: uppercase;">Pedidos Entregados</div>
-        <div style="font-family: var(--font-epilogue); font-size: 1.85rem; font-weight: 900; color: #111c2d; margin-top: 0.25rem;">
+      <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 0.8rem; font-weight: 800; color: var(--color-on-surface-variant); text-transform: uppercase;">Pedidos Entregados</div>
+        <div style="font-family: var(--font-epilogue); font-size: 1.95rem; font-weight: 900; color: var(--color-on-surface); margin-top: 0.35rem;">
           <?php echo $deliveredOrders; ?>
         </div>
-        <div style="font-size: 0.75rem; color: #5c403c; margin-top: 0.25rem;">Entregas completadas</div>
+        <div style="font-size: 0.75rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">Entregas completadas</div>
       </div>
 
-      <div style="background: white; padding: 1.5rem; border-radius: 1.25rem; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
-        <div style="font-size: 0.8rem; font-weight: 700; color: #5c403c; text-transform: uppercase;">Total Registrados</div>
-        <div style="font-family: var(--font-epilogue); font-size: 1.85rem; font-weight: 900; color: #fea619; margin-top: 0.25rem;">
+      <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 0.8rem; font-weight: 800; color: var(--color-on-surface-variant); text-transform: uppercase;">Total Registrados</div>
+        <div style="font-family: var(--font-epilogue); font-size: 1.95rem; font-weight: 900; color: #855300; margin-top: 0.35rem;">
           <?php echo $totalOrders; ?>
         </div>
-        <div style="font-size: 0.75rem; color: #5c403c; margin-top: 0.25rem;">Historial total en MySQL</div>
+        <div style="font-size: 0.75rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">Historial total en MySQL</div>
       </div>
     </div>
 
-    <!-- Lista de Órdenes -->
-    <div style="background: white; border-radius: 1.25rem; border: 1px solid var(--color-border); padding: 1.75rem; box-shadow: var(--shadow-sm);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-        <h2 style="font-family: var(--font-epilogue); font-size: 1.35rem; font-weight: 800; color: #111c2d; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+    <!-- Lista de Órdenes Neumórfica -->
+    <div style="background: var(--neu-bg); border-radius: var(--radius-lg); box-shadow: var(--neu-extruded-lg); border: 1px solid var(--color-border-subtle); padding: 2.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="font-family: var(--font-epilogue); font-size: 1.45rem; font-weight: 800; color: var(--color-on-surface); margin: 0; display: flex; align-items: center; gap: 0.6rem;">
           <span class="material-symbols-outlined" style="color: #dc2626;">order_approve</span>
           Gestión de Pedidos en Vivo (MySQL)
         </h2>
-        <span style="font-size: 0.85rem; color: #5c403c;">Mostrando los últimos 50 pedidos</span>
+        <span style="font-size: 0.85rem; color: var(--color-on-surface-variant); font-weight: 700;">Mostrando los últimos 50 pedidos</span>
       </div>
 
       <?php if (empty($orders)): ?>
-        <div style="text-align: center; padding: 3rem; color: #5c403c;">
+        <div style="text-align: center; padding: 3rem; color: var(--color-on-surface-variant);">
           <span class="material-symbols-outlined" style="font-size: 48px; color: #fea619;">receipt_long</span>
           <p style="margin-top: 0.5rem;">No hay órdenes registradas todavía en la base de datos.</p>
         </div>
       <?php else: ?>
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
           <?php foreach ($orders as $o): ?>
-            <div style="border: 1px solid var(--color-border); border-radius: 1rem; padding: 1.5rem; background: #ffffff; transition: box-shadow 0.2s ease;" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='none'">
+            <div style="border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: 1.75rem; background: var(--neu-bg); box-shadow: var(--neu-extruded);">
               
               <!-- Cabecera de la orden -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid #f0f3ff; padding-bottom: 1rem; margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
                 <div>
-                  <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span style="font-family: var(--font-epilogue); font-size: 1.25rem; font-weight: 900; color: #dc2626;">
+                  <div style="display: flex; align-items: center; gap: 0.85rem;">
+                    <span style="font-family: var(--font-epilogue); font-size: 1.35rem; font-weight: 900; color: #dc2626;">
                       <?php echo htmlspecialchars($o['order_code']); ?>
                     </span>
                     <span class="badge-status status-<?php echo $o['status']; ?>">
                       ● <?php echo strtoupper($o['status']); ?>
                     </span>
                   </div>
-                  <div style="font-size: 0.85rem; color: #5c403c; margin-top: 0.25rem;">
+                  <div style="font-size: 0.85rem; color: var(--color-on-surface-variant); margin-top: 0.35rem;">
                     <strong>Cliente:</strong> <?php echo htmlspecialchars($o['customer_name']); ?> • 
-                    <strong>Tel:</strong> <a href="tel:<?php echo htmlspecialchars($o['customer_phone']); ?>" style="color:#111c2d; font-weight:700;"><?php echo htmlspecialchars($o['customer_phone']); ?></a> • 
+                    <strong>Tel:</strong> <a href="tel:<?php echo htmlspecialchars($o['customer_phone']); ?>" style="color: var(--color-on-surface); font-weight: 800;"><?php echo htmlspecialchars($o['customer_phone']); ?></a> • 
                     <strong>Fecha:</strong> <?php echo date('d/m/Y h:i A', strtotime($o['created_at'])); ?>
                   </div>
                 </div>
 
                 <div style="text-align: right;">
-                  <div style="font-family: var(--font-epilogue); font-size: 1.35rem; font-weight: 900; color: #111c2d;">
+                  <div style="font-family: var(--font-epilogue); font-size: 1.45rem; font-weight: 900; color: var(--color-on-surface);">
                     $<?php echo number_format($o['total'], 0, ',', '.'); ?>
                   </div>
-                  <div style="font-size: 0.75rem; color: #1a8340; font-weight: 700;">
+                  <div style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">
                     Pago: <?php echo strtoupper(htmlspecialchars($o['payment_method'])); ?>
                   </div>
                 </div>
               </div>
 
               <!-- Dirección y Notas -->
-              <div style="background: #f9f9ff; padding: 0.85rem 1rem; border-radius: 0.75rem; font-size: 0.85rem; margin-bottom: 1rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); border: 1px solid var(--color-border-subtle); padding: 0.95rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
                 <div>
                   <span class="material-symbols-outlined" style="font-size: 16px; color: #dc2626;">pin_drop</span>
                   <strong>Destino en Neiva:</strong> <?php echo htmlspecialchars($o['delivery_address']); ?> (<?php echo htmlspecialchars($o['comuna']); ?>)
                 </div>
                 <?php if (!empty($o['instructions'])): ?>
-                  <div style="color: #fea619; font-weight: 700;">
+                  <div style="color: #855300; font-weight: 800;">
                     📝 Nota: "<?php echo htmlspecialchars($o['instructions']); ?>"
                   </div>
                 <?php endif; ?>
               </div>
 
               <!-- Ítems del pedido -->
-              <div style="margin-bottom: 1.25rem;">
-                <div style="font-size: 0.8rem; font-weight: 800; color: #5c403c; text-transform: uppercase; margin-bottom: 0.5rem;">
+              <div style="margin-bottom: 1.5rem;">
+                <div style="font-size: 0.8rem; font-weight: 900; color: var(--color-on-surface-variant); text-transform: uppercase; margin-bottom: 0.65rem;">
                   Platos Solicitados (<?php echo count($o['items']); ?> ítems)
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.65rem;">
                   <?php foreach ($o['items'] as $item): ?>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.4rem 0.5rem; background: #ffffff; border-radius: 0.5rem; border: 1px dashed #e7eeff;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.65rem 0.85rem; background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
                       <div>
-                        <strong><?php echo $item['quantity']; ?>x <?php echo htmlspecialchars($item['item_name']); ?></strong>
+                        <strong style="color: var(--color-on-surface);"><?php echo $item['quantity']; ?>x <?php echo htmlspecialchars($item['item_name']); ?></strong>
                         <?php if (!empty($item['doneness'])): ?>
                           <span style="color: #dc2626; font-size: 0.75rem;">(<?php echo htmlspecialchars($item['doneness']); ?>)</span>
                         <?php endif; ?>
                         <?php if (!empty($item['bread'])): ?>
-                          <span style="color: #5c403c; font-size: 0.75rem;">• Pan: <?php echo htmlspecialchars($item['bread']); ?></span>
+                          <span style="color: var(--color-on-surface-variant); font-size: 0.75rem;">• Pan: <?php echo htmlspecialchars($item['bread']); ?></span>
                         <?php endif; ?>
 
                         <?php if (!empty($item['toppings']) && is_array($item['toppings'])): ?>
-                          <div style="font-size: 0.75rem; color: #111c2d; margin-top: 0.2rem;">
+                          <div style="font-size: 0.75rem; color: var(--color-on-surface); margin-top: 0.25rem;">
                             + Extras: <?php echo implode(', ', array_map(fn($t) => $t['name'] . ' ($' . number_format($t['price'], 0, ',', '.') . ')', $item['toppings'])); ?>
                           </div>
                         <?php endif; ?>
 
                         <?php if (!empty($item['sauces']) && is_array($item['sauces'])): ?>
-                          <div style="font-size: 0.75rem; color: #00682e;">
+                          <div style="font-size: 0.75rem; color: #1a8340;">
                             Salsas: <?php echo implode(', ', $item['sauces']); ?>
                           </div>
                         <?php endif; ?>
                       </div>
-                      <span style="font-weight: 700;">$<?php echo number_format($item['subtotal'], 0, ',', '.'); ?></span>
+                      <span style="font-weight: 800; color: var(--color-on-surface);">$<?php echo number_format($item['subtotal'], 0, ',', '.'); ?></span>
                     </div>
                   <?php endforeach; ?>
                 </div>
               </div>
 
               <!-- Repartidor y Botones de Avance de Estado -->
-              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid #f0f3ff; padding-top: 1rem;">
-                <div style="font-size: 0.8rem; color: #5c403c;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-top: 1px solid var(--color-border-subtle); padding-top: 1.25rem;">
+                <div style="font-size: 0.8rem; color: var(--color-on-surface-variant);">
                   <?php if (!empty($o['rider_name'])): ?>
-                    <span>🛵 Repartidor asignado: <strong><?php echo htmlspecialchars($o['rider_name']); ?></strong> (<?php echo htmlspecialchars($o['rider_vehicle']); ?> - <?php echo htmlspecialchars($o['rider_plate']); ?>)</span>
+                    <span>🛵 Repartidor: <strong style="color: var(--color-on-surface);"><?php echo htmlspecialchars($o['rider_name']); ?></strong> (<?php echo htmlspecialchars($o['rider_vehicle']); ?> - <?php echo htmlspecialchars($o['rider_plate']); ?>)</span>
                   <?php else: ?>
-                    <span style="color: #fea619;">Repartidor por asignar</span>
+                    <span style="color: #fea619; font-weight: 800;">Repartidor por asignar</span>
                   <?php endif; ?>
                 </div>
 
                 <!-- Botones para cambiar estado en cocina -->
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
                   <!-- Botón Ver Rastreo del Cliente -->
-                  <a href="index.php#rastreo" onclick="localStorage.setItem('antojo_active_order_code', '<?php echo $o['order_code']; ?>');" class="action-btn-sm" style="background: #e7eeff; color: #111c2d; text-decoration: none;">
+                  <a href="index.php#rastreo" onclick="localStorage.setItem('antojo_active_order_code', '<?php echo $o['order_code']; ?>');" class="action-btn-sm" style="background: var(--neu-bg); color: var(--color-on-surface); text-decoration: none;">
                     <span class="material-symbols-outlined" style="font-size: 16px;">near_me</span>
                     Ver Rastreo Cliente
                   </a>

@@ -60,164 +60,181 @@ try {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instalador & Diagnóstico | ANTOJO VIRTUAL</title>
+  <title>Instalador & Diagnóstico (Neumorfismo) | ANTOJO VIRTUAL</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    :root {
-      --primary: #dc2626;
-      --primary-dark: #b70011;
-      --secondary: #fea619;
-      --success: #1a8340;
-      --surface: #f9f9ff;
-      --text: #111c2d;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: var(--surface);
-      color: var(--text);
-      line-height: 1.5;
-      padding: 2rem 1rem;
+      background-color: var(--neu-bg);
+      color: var(--color-on-surface);
+      padding: 2.5rem 1rem;
     }
     .container {
-      max-width: 860px;
+      max-width: 880px;
       margin: 0 auto;
     }
     .card {
-      background: #ffffff;
-      border-radius: 1.25rem;
-      border: 1px solid #e7eeff;
-      box-shadow: 0 10px 30px rgba(17, 28, 45, 0.05);
-      padding: 2rem;
-      margin-bottom: 1.5rem;
+      background: var(--neu-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border-subtle);
+      box-shadow: var(--neu-extruded-lg);
+      padding: 2.25rem;
+      margin-bottom: 2rem;
     }
     .header {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
     }
     .logo-badge {
-      width: 56px;
-      height: 56px;
-      border-radius: 1rem;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      background: var(--color-primary-neu);
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       font-size: 2rem;
-      box-shadow: 0 8px 16px rgba(220, 38, 38, 0.25);
+      box-shadow: var(--color-primary-neu-shadow);
     }
     h1 {
-      font-family: 'Epilogue', sans-serif;
+      font-family: var(--font-epilogue);
       font-size: 1.85rem;
-      font-weight: 800;
-      color: #111c2d;
+      font-weight: 900;
+      color: var(--color-on-surface);
     }
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.35rem 0.85rem;
+      gap: 0.4rem;
+      padding: 0.45rem 1rem;
       border-radius: 9999px;
       font-size: 0.85rem;
-      font-weight: 700;
+      font-weight: 800;
+      box-shadow: var(--neu-extruded-sm);
+      border: 1px solid var(--color-border-subtle);
     }
-    .badge-success { background: #e7ffe5; color: var(--success); }
-    .badge-error { background: #ffdad6; color: var(--primary-dark); }
+    .badge-success { background: var(--neu-bg); color: #00682e; }
+    .badge-error { background: var(--neu-bg); color: #dc2626; }
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin: 1.5rem 0;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+      margin: 2rem 0;
     }
     .stat-card {
-      background: #f0f3ff;
-      padding: 1.25rem;
-      border-radius: 1rem;
+      background: var(--neu-bg);
+      box-shadow: var(--neu-extruded-sm);
+      border: 1px solid var(--color-border-subtle);
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.35rem;
     }
     .stat-val {
-      font-family: 'Epilogue', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--primary-dark);
+      font-family: var(--font-epilogue);
+      font-size: 2rem;
+      font-weight: 900;
+      color: #dc2626;
     }
     .stat-lbl {
       font-size: 0.85rem;
-      color: #5c403c;
-      font-weight: 600;
+      color: var(--color-on-surface-variant);
+      font-weight: 700;
     }
     table {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
+      border-collapse: separate;
+      border-spacing: 0 0.65rem;
+      margin-top: 1.25rem;
     }
     th, td {
-      padding: 0.75rem 1rem;
+      padding: 0.85rem 1.15rem;
       text-align: left;
-      border-bottom: 1px solid #e7eeff;
       font-size: 0.9rem;
     }
     th {
-      font-weight: 700;
-      color: #5c403c;
-      background: #f9f9ff;
+      font-weight: 800;
+      color: var(--color-on-surface-variant);
+      background: transparent;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+    td {
+      background: var(--neu-bg);
+      box-shadow: var(--neu-extruded-sm);
+      border-top: 1px solid var(--color-border-subtle);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    td:first-child {
+      border-top-left-radius: var(--radius-sm);
+      border-bottom-left-radius: var(--radius-sm);
+      border-left: 1px solid var(--color-border-subtle);
+    }
+    td:last-child {
+      border-top-right-radius: var(--radius-sm);
+      border-bottom-right-radius: var(--radius-sm);
+      border-right: 1px solid var(--color-border-subtle);
     }
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: var(--primary);
+      background: var(--color-primary-neu);
       color: white;
       text-decoration: none;
-      padding: 0.85rem 1.5rem;
-      border-radius: 0.85rem;
-      font-weight: 700;
+      padding: 0.9rem 1.65rem;
+      border-radius: var(--radius-full);
+      font-weight: 800;
       border: none;
       cursor: pointer;
       font-size: 0.95rem;
+      box-shadow: var(--color-primary-neu-shadow);
       transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
     }
     .btn:hover {
-      background: var(--primary-dark);
       transform: translateY(-2px);
     }
+    .btn:active {
+      box-shadow: var(--color-primary-neu-inset);
+    }
     .btn-secondary {
-      background: #e7eeff;
-      color: #111c2d;
-      box-shadow: none;
+      background: var(--neu-bg);
+      color: var(--color-on-surface);
+      box-shadow: var(--neu-extruded-sm);
+      border: 1px solid var(--color-border-subtle);
     }
     .btn-secondary:hover {
-      background: #d8e3fb;
+      box-shadow: var(--neu-extruded);
+      color: #dc2626;
     }
-    .btn-warning {
-      background: #b70011;
-      color: white;
+    .btn-secondary:active {
+      box-shadow: var(--neu-inset-sm);
     }
     .alert {
-      padding: 1rem 1.25rem;
-      border-radius: 0.75rem;
-      margin-bottom: 1.5rem;
-      font-weight: 600;
+      padding: 1.15rem 1.5rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.75rem;
+      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
+      box-shadow: var(--neu-extruded-sm);
+      border: 1px solid var(--color-border-subtle);
     }
-    .alert-success { background: #e7ffe5; color: #00682e; border: 1px solid #79db8d; }
-    .alert-error { background: #ffdad6; color: #93000a; border: 1px solid #ffb4ab; }
+    .alert-success { background: var(--neu-bg); color: #00682e; }
+    .alert-error { background: var(--neu-bg); color: #93000a; }
     .actions-row {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-top: 1.5rem;
+      margin-top: 2rem;
     }
   </style>
 </head>
@@ -230,7 +247,7 @@ try {
         </div>
         <div>
           <h1>ANTOJO VIRTUAL • XAMPP & MySQL</h1>
-          <p style="color: #5c403c; font-size: 0.95rem;">Panel de Diagnóstico & Configuración en Neiva, Huila</p>
+          <p style="color: var(--color-on-surface-variant); font-size: 0.95rem; font-weight: 600;">Panel de Diagnóstico & Configuración en Neiva (Neumorfismo)</p>
         </div>
       </div>
 
@@ -241,17 +258,17 @@ try {
         </div>
       <?php endif; ?>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid #e7eeff;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding-bottom:1.25rem; border-bottom:1px solid var(--color-border-subtle);">
         <div>
           <strong>Estado de Conexión MySQL:</strong>
           <?php if ($dbStatus): ?>
-            <span class="badge badge-success"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Conectado a MySQL (localhost:3306)</span>
+            <span class="badge badge-success"><span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Conectado a MySQL (localhost:3306)</span>
           <?php else: ?>
-            <span class="badge badge-error"><span class="material-symbols-outlined" style="font-size:16px;">cancel</span> Desconectado</span>
+            <span class="badge badge-error"><span class="material-symbols-outlined" style="font-size:18px;">cancel</span> Desconectado</span>
           <?php endif; ?>
         </div>
         <div>
-          <span style="font-size:0.85rem; color:#5c403c;">Base de datos: <strong>antojo_virtual</strong> (MariaDB / PHP 8.2)</span>
+          <span style="font-size:0.85rem; color:var(--color-on-surface-variant); font-weight:700;">Base de datos: <strong>antojo_virtual</strong> (MariaDB / PHP 8.2)</span>
         </div>
       </div>
 
@@ -270,7 +287,7 @@ try {
         </div>
       </div>
 
-      <h3 style="font-family:'Epilogue', sans-serif; margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.15rem;">
+      <h3 style="font-family:var(--font-epilogue); margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.25rem; font-weight:800;">
         Tablas del Sistema en MySQL
       </h3>
       <table>
@@ -288,9 +305,9 @@ try {
               <td><strong><?php echo is_numeric($cnt) ? $cnt : 0; ?></strong> filas</td>
               <td>
                 <?php if (is_numeric($cnt)): ?>
-                  <span style="color: var(--success); font-weight:700;">✓ Correcta</span>
+                  <span style="color: #00682e; font-weight:800;">✓ Correcta</span>
                 <?php else: ?>
-                  <span style="color: var(--primary); font-weight:700;">✗ Falta</span>
+                  <span style="color: #dc2626; font-weight:800;">✗ Falta</span>
                 <?php endif; ?>
               </td>
             </tr>
@@ -313,7 +330,7 @@ try {
         </a>
         <form method="POST" onsubmit="return confirm('¿Seguro que deseas reiniciar la base de datos con los datos iniciales de Neiva? Se reiniciarán órdenes y menús.');" style="margin-left:auto;">
           <input type="hidden" name="action" value="reset_database">
-          <button type="submit" class="btn btn-warning">
+          <button type="submit" class="btn" style="background: linear-gradient(145deg, #b70011, #85000c);">
             <span class="material-symbols-outlined">restart_alt</span>
             Reiniciar Base de Datos
           </button>
