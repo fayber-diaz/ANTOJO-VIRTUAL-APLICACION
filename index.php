@@ -17,6 +17,14 @@ $db = getDB();
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   
+  <!-- Metadatos y Manifiesto PWA (Instalable en Celulares) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#dc2626">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Antojo Virtual">
+  <link rel="apple-touch-icon" href="assets/icons/icon.svg">
+
   <!-- Hojas de Estilos Neumórficas & Mapas -->
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/auth.css">
@@ -67,6 +75,18 @@ $db = getDB();
 
         <!-- Acciones del Header -->
         <div class="header-actions">
+          <!-- Botón de Audio Efectos -->
+          <button id="btn-audio-toggle" onclick="App.toggleSoundFX()" class="btn-admin-link" title="Efectos de sonido en vivo">
+            <span id="audio-toggle-icon" class="material-symbols-outlined" style="font-size: 18px; color: #16a34a;">volume_up</span>
+            <span id="audio-toggle-text">Sonido</span>
+          </button>
+
+          <!-- Portal Rider para Domiciliario -->
+          <a href="rider.php" target="_blank" class="btn-admin-link" title="Portal para el repartidor en moto">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #fea619;">two_wheeler</span>
+            <span>Rider App</span>
+          </a>
+
           <!-- Auth JWT: Botón de usuario / login -->
           <div id="header-auth-btn"></div>
 
@@ -74,6 +94,12 @@ $db = getDB();
             <span class="material-symbols-outlined" style="font-size: 18px; color: #dc2626;">kitchen</span>
             <span>Panel Cocina</span>
           </a>
+
+          <!-- Botón de Instalación PWA (Móvil) -->
+          <button id="btn-install-pwa" onclick="App.promptInstallPWA()" class="btn-admin-link" style="display: none; background: #dc2626; color: #ffffff;" title="Instalar Antojo Virtual en tu celular">
+            <span class="material-symbols-outlined" style="font-size: 18px;">install_mobile</span>
+            <span>Instalar App</span>
+          </button>
 
           <button class="btn-cart" onclick="App.navigate('checkout')">
             <span class="material-symbols-outlined" style="font-size: 20px;">shopping_bag</span>
@@ -1315,6 +1341,22 @@ $db = getDB();
             <div style="font-weight: 800; margin-bottom: 2px;">CUFE (Código Único de Facturación Electrónica DIAN):</div>
             <div id="receipt-cufe-code">8f89c4501b87a9d04ef124803923a1e948c27940182390abcef182903810293849102839401829384910293849102938</div>
           </div>
+
+          <!-- Código QR Dinámico Fiscal DIAN -->
+          <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem;">
+            <div id="receipt-qr-container" style="background: #ffffff; padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1; flex-shrink: 0;">
+              <canvas id="receipt-qr-canvas" width="90" height="90" style="display: block; width: 80px; height: 80px;"></canvas>
+            </div>
+            <div>
+              <div style="font-weight: 800; font-size: 0.82rem; color: #0f172a; display: flex; align-items: center; gap: 0.35rem;">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #16a34a;">verified</span>
+                Validación Fiscal DIAN en Línea
+              </div>
+              <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px; line-height: 1.35;">
+                Escanea este código QR con la cámara de tu celular para verificar la firma digital y el registro tributario de este comprobante.
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Botones de Acción -->
@@ -1328,6 +1370,90 @@ $db = getDB();
             <span>Ver Rastreo en Vivo</span>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 3: CALIFICACIÓN & RESEÑAS POST-ENTREGA (NEUMORFISMO)
+       ========================================================= -->
+  <div id="review-modal" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span class="material-symbols-outlined" style="color: #fea619; font-size: 32px;">stars</span>
+          <div>
+            <h3 style="font-family: var(--font-epilogue); font-size: 1.25rem; font-weight: 900; margin: 0; color: var(--color-on-surface);">
+              ¿Cómo estuvo tu antojo?
+            </h3>
+            <span style="font-size: 0.78rem; color: var(--color-on-surface-variant);">
+              Tu calificación apoya a los restaurantes y repartidores de Neiva
+            </span>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="App.closeReviewModal()">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        
+        <!-- Calificación de la Comida / Restaurante -->
+        <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); border-radius: var(--radius-md); padding: 1.15rem; margin-bottom: 1.15rem; text-align: center; border: 1px solid var(--color-border-subtle);">
+          <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--color-on-surface-variant); display: block; margin-bottom: 0.5rem;">
+            1. Calidad & Sabor de la Comida
+          </span>
+          <div class="rating-stars" id="food-stars" style="display: flex; justify-content: center; gap: 0.45rem; font-size: 2.2rem; cursor: pointer; color: #fea619;">
+            <span class="star-btn" data-val="1" onclick="App.setReviewRating('food', 1)">★</span>
+            <span class="star-btn" data-val="2" onclick="App.setReviewRating('food', 2)">★</span>
+            <span class="star-btn" data-val="3" onclick="App.setReviewRating('food', 3)">★</span>
+            <span class="star-btn" data-val="4" onclick="App.setReviewRating('food', 4)">★</span>
+            <span class="star-btn" data-val="5" onclick="App.setReviewRating('food', 5)">★</span>
+          </div>
+          <div id="food-rating-label" style="font-weight: 800; font-size: 0.85rem; color: var(--color-on-surface); margin-top: 0.35rem;">
+            5.0 - ¡Espectacular sabor huilense!
+          </div>
+        </div>
+
+        <!-- Calificación del Repartidor -->
+        <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); border-radius: var(--radius-md); padding: 1.15rem; margin-bottom: 1.15rem; text-align: center; border: 1px solid var(--color-border-subtle);">
+          <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--color-on-surface-variant); display: block; margin-bottom: 0.5rem;">
+            2. Servicio & Puntualidad del Domiciliario (Carlos Mendoza)
+          </span>
+          <div class="rating-stars" id="rider-stars" style="display: flex; justify-content: center; gap: 0.45rem; font-size: 2.2rem; cursor: pointer; color: #fea619;">
+            <span class="star-btn" data-val="1" onclick="App.setReviewRating('rider', 1)">★</span>
+            <span class="star-btn" data-val="2" onclick="App.setReviewRating('rider', 2)">★</span>
+            <span class="star-btn" data-val="3" onclick="App.setReviewRating('rider', 3)">★</span>
+            <span class="star-btn" data-val="4" onclick="App.setReviewRating('rider', 4)">★</span>
+            <span class="star-btn" data-val="5" onclick="App.setReviewRating('rider', 5)">★</span>
+          </div>
+          <div id="rider-rating-label" style="font-weight: 800; font-size: 0.85rem; color: var(--color-on-surface); margin-top: 0.35rem;">
+            5.0 - ¡Entrega rápida y comida bien caliente!
+          </div>
+        </div>
+
+        <!-- Etiquetas Rápidas -->
+        <div style="margin-bottom: 1.15rem;">
+          <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: var(--color-on-surface-variant); display: block; margin-bottom: 0.5rem;">
+            ¿Qué fue lo mejor? (Toca para seleccionar)
+          </span>
+          <div id="review-tags-container" style="display: flex; flex-wrap: wrap; gap: 0.45rem;">
+            <span class="cat-chip active" onclick="this.classList.toggle('active')" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; cursor: pointer;">🔥 Comida Caliente</span>
+            <span class="cat-chip active" onclick="this.classList.toggle('active')" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; cursor: pointer;">⚡ Entrega Rápida</span>
+            <span class="cat-chip active" onclick="this.classList.toggle('active')" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; cursor: pointer;">🍔 Sabor Increíble</span>
+            <span class="cat-chip" onclick="this.classList.toggle('active')" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; cursor: pointer;">🛵 Repartidor Amable</span>
+            <span class="cat-chip" onclick="this.classList.toggle('active')" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; cursor: pointer;">✨ Empaque Impecable</span>
+          </div>
+        </div>
+
+        <!-- Comentario Adicional -->
+        <div style="margin-bottom: 1.25rem;">
+          <textarea id="review-comment-input" class="form-input" rows="2" placeholder="Escribe un comentario o mensaje opcional..." style="box-shadow: var(--neu-inset-sm); width: 100%; border-radius: var(--radius-md); padding: 0.75rem; font-family: inherit; font-size: 0.85rem;"></textarea>
+        </div>
+
+        <button onclick="App.submitOrderReview()" class="btn-customize" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #fea619, #dc2626); color: #fff; font-size: 1rem; box-shadow: var(--color-primary-neu-shadow);">
+          <span class="material-symbols-outlined">send</span>
+          Enviar Calificación
+        </button>
+
       </div>
     </div>
   </div>

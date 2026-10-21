@@ -1,0 +1,25 @@
+{
+  "name": "Antojo Virtual - Domicilios Neiva",
+  "short_name": "Antojo Virtual",
+  "description": "Pide hamburguesas artesanales, comida rápida y delicias huilenses con rastreo GPS en vivo en Neiva.",
+  "start_url": "index.php",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e5ebf3",
+  "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["food", "delivery", "shopping"]
+}

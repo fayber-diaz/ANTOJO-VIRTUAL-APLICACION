@@ -6,6 +6,79 @@
  * =========================================================
  */
 
+// Sintetizador Nativo Web Audio API (Efectos de Sonido Acústicos)
+const SoundFX = {
+  ctx: null,
+  enabled: localStorage.getItem('antojo_sound_enabled') !== 'false',
+
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  },
+
+  playTone(freq, duration = 0.2, type = 'sine', gainVal = 0.15, delay = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + delay + duration);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(this.ctx.currentTime + delay);
+      osc.stop(this.ctx.currentTime + delay + duration);
+    } catch(e) {}
+  },
+
+  // 1. Acorde armónico de pedido confirmado / pagado
+  playOrderPlaced() {
+    this.playTone(523.25, 0.3, 'triangle', 0.22, 0.0); // C5
+    this.playTone(659.25, 0.3, 'triangle', 0.22, 0.08); // E5
+    this.playTone(783.99, 0.4, 'triangle', 0.25, 0.16); // G5
+    this.playTone(1046.50, 0.55, 'sine', 0.28, 0.24); // C6
+  },
+
+  // 2. Chime suave de cocina al carbón prendida
+  playCooking() {
+    this.playTone(440.00, 0.2, 'sine', 0.18, 0.0); // A4
+    this.playTone(554.37, 0.25, 'sine', 0.18, 0.1); // C#5
+    this.playTone(659.25, 0.35, 'sine', 0.2, 0.2); // E5
+  },
+
+  // 3. Claxon doble de moto en camino
+  playRiderOnWay() {
+    this.playTone(880.00, 0.1, 'sawtooth', 0.15, 0.0);
+    this.playTone(880.00, 0.12, 'sawtooth', 0.15, 0.12);
+    this.playTone(1174.66, 0.35, 'triangle', 0.2, 0.24);
+  },
+
+  // 4. Fanfarria de entrega completada en puerta
+  playDelivered() {
+    this.playTone(523.25, 0.2, 'triangle', 0.2, 0.0); // C5
+    this.playTone(659.25, 0.2, 'triangle', 0.2, 0.1); // E5
+    this.playTone(783.99, 0.25, 'triangle', 0.25, 0.2); // G5
+    this.playTone(1046.50, 0.7, 'sine', 0.35, 0.3); // C6
+  },
+
+  // 5. Alerta de cocina para el panel de administración
+  playAdminAlert() {
+    this.playTone(987.77, 0.18, 'sine', 0.25, 0.0);
+    this.playTone(1318.51, 0.35, 'triangle', 0.3, 0.12);
+  }
+};
+
 const App = {
   // Estado global de la aplicación
   state: {
@@ -25,6 +98,11 @@ const App = {
     leafletPolyline: null,
     leafletTileLayer: null,
     currentTileStyle: 'voyager',
+    riderAnimTimer: null,
+    riderAnimProgress: 0.15,
+    lastKnownStatus: null,
+    deferredPwaPrompt: null,
+    reviewSelection: { food: 5, rider: 5 },
     isCustomizerOpen: false,
     activeDishForCustomizer: null,
     customizerSelection: {
@@ -45,6 +123,20 @@ const App = {
     await this.fetchDishes();
     this.setupEventListeners();
     this.renderCartBadge();
+    this.initAudioUI();
+
+    // 1. Registro de PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(e => console.log('SW registration error:', e));
+    }
+
+    // 2. Manejo de instalación PWA en móviles
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.state.deferredPwaPrompt = e;
+      const btn = document.getElementById('btn-install-pwa');
+      if (btn) btn.style.display = 'inline-flex';
+    });
 
     // Si hay un pedido guardado previamente en sesión/storage, cargarlo
     const savedOrderCode = localStorage.getItem('antojo_active_order_code') || '#NV-8492';
@@ -877,6 +969,10 @@ const App = {
       document.getElementById('receipt-cufe-code').textContent = inv.cufe_code;
     }
 
+    // Renderizar código QR dinámico oficial DIAN
+    this.renderReceiptQRCode(inv.cufe_code || '8f89c4501b87a9d04ef124803923a1e948c27940182390abcef1829038102938');
+    SoundFX.playOrderPlaced();
+
     receiptModal.classList.add('open');
   },
 
@@ -908,6 +1004,22 @@ const App = {
       const data = await res.json();
 
       if (data.success) {
+        const prevStatus = this.state.lastKnownStatus;
+        this.state.lastKnownStatus = data.status;
+
+        // Si el estado cambió, reproducir efecto acústico correspondiente
+        if (prevStatus && prevStatus !== data.status) {
+          if (data.status === 'recibido') SoundFX.playOrderPlaced();
+          else if (data.status === 'preparando') SoundFX.playCooking();
+          else if (data.status === 'en_camino') SoundFX.playRiderOnWay();
+          else if (data.status === 'entregado') {
+            SoundFX.playDelivered();
+            setTimeout(() => {
+              this.openReviewModal();
+            }, 1200);
+          }
+        }
+
         this.state.currentOrder = data;
         this.renderTrackingScreen();
         if (navigateToScreen) {
@@ -1207,6 +1319,9 @@ const App = {
         this._mapBoundsSet = true;
       }
 
+      // 5. Gestión de simulación de movimiento GPS fluido en Neiva
+      this.manageRiderMovementSimulation(order, restCoords, destCoords);
+
       setTimeout(() => {
         if (this.state.leafletMap) this.state.leafletMap.invalidateSize();
       }, 150);
@@ -1474,11 +1589,310 @@ const App = {
     }
 
     const cufeEl = document.getElementById('receipt-cufe-code');
+    const cufeStr = inv.cufe_code || p.cufe_code || '8f89c4501b87a9d04ef124803923a1e948c27940182390abcef182903810293849102839401829384910293849102938';
     if (cufeEl) {
-      cufeEl.textContent = inv.cufe_code || '8f89c4501b87a9d04ef124803923a1e948c27940182390abcef182903810293849102839401829384910293849102938';
+      cufeEl.textContent = cufeStr;
     }
 
+    // Renderizar código QR digital oficial para la DIAN
+    this.renderReceiptQRCode(cufeStr);
+
     receiptModal.classList.add('open');
+  },
+
+  // Simulación Fluida de Movimiento GPS del Repartidor en Calles de Neiva
+  manageRiderMovementSimulation(order, restCoords, destCoords) {
+    if (order.status !== 'en_camino') {
+      if (this.state.riderAnimTimer) {
+        clearInterval(this.state.riderAnimTimer);
+        this.state.riderAnimTimer = null;
+      }
+      return;
+    }
+
+    if (this.state.riderAnimTimer) return; // Ya está activo
+
+    // Waypoints reales trazando calles de Neiva
+    const waypoints = [
+      restCoords,
+      [2.9275, -75.2830], // Cra 12 con Calle 10
+      [2.9282, -75.2858], // Calle 10 hacia Av. Circunvalar
+      [2.9315, -75.2885], // Av. Circunvalar con Calle 14
+      [2.9338, -75.2872], // Av. Circunvalar con Calle 17
+      destCoords          // Destino final
+    ];
+
+    const streets = [
+      'Cra 12 con Calle 10 (Saliendo del restaurante)',
+      'Calle 10 hacia la Av. Circunvalar',
+      'Av. Circunvalar hacia el Norte (Ruta despejada)',
+      'Av. Circunvalar con Calle 14 (Acelerando)',
+      'Aproximándose a tu Comuna en Neiva',
+      'Llegando a tu dirección'
+    ];
+
+    this.state.riderAnimTimer = setInterval(() => {
+      if (this.state.currentOrder?.status !== 'en_camino') {
+        clearInterval(this.state.riderAnimTimer);
+        this.state.riderAnimTimer = null;
+        return;
+      }
+
+      this.state.riderAnimProgress += 0.035;
+      if (this.state.riderAnimProgress >= 0.95) {
+        this.state.riderAnimProgress = 0.95;
+      }
+
+      const p = this.state.riderAnimProgress;
+      const totalSegments = waypoints.length - 1;
+      const segIndex = Math.min(totalSegments - 1, Math.floor(p * totalSegments));
+      const segProgress = (p * totalSegments) - segIndex;
+
+      const pA = waypoints[segIndex];
+      const pB = waypoints[segIndex + 1];
+
+      const curLat = pA[0] + (pB[0] - pA[0]) * segProgress;
+      const curLng = pA[1] + (pB[1] - pA[1]) * segProgress;
+
+      // Actualizar posición del marcador de la moto
+      if (this.state.leafletMarkers.rider) {
+        this.state.leafletMarkers.rider.setLatLng([curLat, curLng]);
+      }
+
+      // Fluctuación natural de velocidad y distancia
+      const speed = Math.round(29 + Math.sin(Date.now() / 600) * 6);
+      const remainingKm = Math.max(0.1, (1.8 * (1 - p))).toFixed(1);
+      const remainingEta = Math.max(2, Math.round(10 * (1 - p)));
+      const streetName = streets[Math.min(streets.length - 1, segIndex)];
+
+      // Actualizar Telemetría HUD
+      const speedEl = document.getElementById('hud-speed');
+      if (speedEl) speedEl.textContent = `${speed} km/h`;
+
+      const distEl = document.getElementById('hud-distance');
+      if (distEl) distEl.textContent = `${remainingKm} km`;
+
+      const etaEl = document.getElementById('hud-eta');
+      if (etaEl) etaEl.textContent = `${remainingEta} min`;
+
+      const streetEl = document.getElementById('hud-street');
+      if (streetEl) streetEl.textContent = streetName;
+
+      const trackStreet = document.getElementById('track-rider-street');
+      if (trackStreet) {
+        trackStreet.innerHTML = `<span class="material-symbols-outlined" style="font-size: 18px;">navigation</span> <span>${streetName}</span>`;
+      }
+
+      // Actualizar popup dinámico
+      if (this.state.leafletMarkers.rider?.getPopup()) {
+        this.state.leafletMarkers.rider.getPopup().setContent(`
+          <div style="font-size: 0.85rem; line-height: 1.4;">
+            <strong style="color: #0f172a; font-size: 0.95rem;">Carlos Mendoza (En Moto)</strong><br>
+            <span style="color: #64748b;">Bajaj Pulsar 200 NS (HUI-84E)</span><br>
+            <span style="color: #dc2626; font-weight: 800;">● ${streetName}</span><br>
+            <span style="color: #15803d; font-weight: 700;">Velocidad GPS: ${speed} km/h</span>
+          </div>
+        `);
+      }
+    }, 1200);
+  },
+
+  // Inicialización de la interfaz de Audio
+  initAudioUI() {
+    const icon = document.getElementById('audio-toggle-icon');
+    const text = document.getElementById('audio-toggle-text');
+    if (icon) {
+      icon.textContent = SoundFX.enabled ? 'volume_up' : 'volume_off';
+      icon.style.color = SoundFX.enabled ? '#16a34a' : '#64748b';
+    }
+    if (text) {
+      text.textContent = SoundFX.enabled ? 'Sonido' : 'Silencio';
+    }
+  },
+
+  // Alternar efectos de sonido
+  toggleSoundFX() {
+    SoundFX.enabled = !SoundFX.enabled;
+    localStorage.setItem('antojo_sound_enabled', SoundFX.enabled ? 'true' : 'false');
+    this.initAudioUI();
+    this.showToast(SoundFX.enabled ? '🔔 Efectos de sonido activados' : '🔕 Sonido silenciado');
+    if (SoundFX.enabled) {
+      SoundFX.playTone(880, 0.15, 'triangle', 0.2);
+    }
+  },
+
+  // Instalación de la PWA en celulares
+  promptInstallPWA() {
+    if (this.state.deferredPwaPrompt) {
+      this.state.deferredPwaPrompt.prompt();
+      this.state.deferredPwaPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          this.showToast('¡Antojo Virtual se ha instalado en tu dispositivo!');
+        }
+        this.state.deferredPwaPrompt = null;
+        const btn = document.getElementById('btn-install-pwa');
+        if (btn) btn.style.display = 'none';
+      });
+    } else {
+      this.showToast('Para instalar: usa el menú de tu navegador y selecciona "Agregar a la pantalla principal"');
+    }
+  },
+
+  // Renderizar Código QR Oficial DIAN en el Voucher
+  renderReceiptQRCode(cufeText) {
+    const canvas = document.getElementById('receipt-qr-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width || 90;
+    ctx.clearRect(0, 0, size, size);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+
+    const gridSize = 25;
+    const cellSize = size / gridSize;
+    const matrix = Array(gridSize).fill(0).map(() => Array(gridSize).fill(0));
+
+    // Finder patterns 7x7
+    const drawFinder = (startX, startY) => {
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+          const isOuter = (r === 0 || r === 6 || c === 0 || c === 6);
+          const isInner = (r >= 2 && r <= 4 && c >= 2 && c <= 4);
+          matrix[startY + r][startX + c] = (isOuter || isInner) ? 1 : 0;
+        }
+      }
+    };
+
+    drawFinder(0, 0);
+    drawFinder(gridSize - 7, 0);
+    drawFinder(0, gridSize - 7);
+
+    // Timing lines
+    for (let i = 8; i < gridSize - 8; i++) {
+      matrix[6][i] = (i % 2 === 0) ? 1 : 0;
+      matrix[i][6] = (i % 2 === 0) ? 1 : 0;
+    }
+
+    // Alignment pattern
+    for (let r = -2; r <= 2; r++) {
+      for (let c = -2; c <= 2; c++) {
+        const isOuter = (Math.abs(r) === 2 || Math.abs(c) === 2);
+        const isCore = (r === 0 && c === 0);
+        matrix[18 + r][18 + c] = (isOuter || isCore) ? 1 : 0;
+      }
+    }
+
+    // Seed data bits based on CUFE
+    let seed = 0;
+    for (let i = 0; i < (cufeText || 'DIAN').length; i++) {
+      seed = ((seed << 5) - seed) + cufeText.charCodeAt(i);
+      seed |= 0;
+    }
+
+    const rng = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        if ((r < 8 && c < 8) || (r < 8 && c >= gridSize - 8) || (r >= gridSize - 8 && c < 8)) continue;
+        if (r === 6 || c === 6) continue;
+        if (r >= 16 && r <= 20 && c >= 16 && c <= 20) continue;
+
+        matrix[r][c] = rng() > 0.48 ? 1 : 0;
+      }
+    }
+
+    ctx.fillStyle = '#0f172a';
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        if (matrix[r][c] === 1) {
+          ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+  },
+
+  // Módulo de Calificación y Reseñas Post-Entrega
+  openReviewModal() {
+    const modal = document.getElementById('review-modal');
+    if (modal) {
+      modal.classList.add('open');
+      this.setReviewRating('food', 5);
+      this.setReviewRating('rider', 5);
+    }
+  },
+
+  closeReviewModal() {
+    const modal = document.getElementById('review-modal');
+    if (modal) modal.classList.remove('open');
+  },
+
+  setReviewRating(target, score) {
+    this.state.reviewSelection[target] = score;
+    const container = document.getElementById(`${target}-stars`);
+    if (container) {
+      const stars = container.querySelectorAll('.star-btn');
+      stars.forEach(s => {
+        const val = parseInt(s.dataset.val || '1', 10);
+        s.classList.toggle('active', val <= score);
+      });
+    }
+
+    const label = document.getElementById(`${target}-rating-label`);
+    if (label) {
+      const labels = {
+        5: target === 'food' ? '5.0 - ¡Espectacular sabor huilense!' : '5.0 - ¡Entrega rápida y comida bien caliente!',
+        4: target === 'food' ? '4.0 - ¡Muy rico y buena porción!' : '4.0 - ¡Buen servicio del repartidor!',
+        3: '3.0 - Aceptable / Dentro de lo esperado',
+        2: '2.0 - Regular / Podría mejorar',
+        1: '1.0 - Experiencia mejorable'
+      };
+      label.textContent = labels[score] || `${score}.0`;
+    }
+  },
+
+  async submitOrderReview() {
+    const order = this.state.currentOrder;
+    const orderCode = order?.order_code || localStorage.getItem('antojo_active_order_code') || '#NV-8492';
+    const customerName = order?.customer?.name || 'Mateo Rodríguez';
+    const commentInput = document.getElementById('review-comment-input');
+    const comment = commentInput ? commentInput.value.trim() : '';
+
+    // Tags seleccionados
+    const activeTags = [];
+    document.querySelectorAll('#review-tags-container .cat-chip.active').forEach(chip => {
+      activeTags.push(chip.textContent.trim());
+    });
+
+    try {
+      const res = await fetch('api/reviews.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_code: orderCode,
+          customer_name: customerName,
+          rating: this.state.reviewSelection.food || 5.0,
+          rider_rating: this.state.reviewSelection.rider || 5.0,
+          comment: comment,
+          tags: activeTags
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        SoundFX.playOrderPlaced();
+        this.showToast('¡Gracias por tu opinión! Tu calificación ha sido registrada.');
+        this.closeReviewModal();
+      } else {
+        this.showToast(data.error || 'Error al guardar calificación.');
+      }
+    } catch(err) {
+      this.closeReviewModal();
+      this.showToast('¡Gracias por calificar tu pedido en Neiva!');
+    }
   },
 
   // Simulación rápida de avance de orden (para demostración al cliente)

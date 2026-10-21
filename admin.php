@@ -144,7 +144,11 @@ foreach ($orders as &$ord) {
         </div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <a href="rider.php" target="_blank" class="btn-customize" style="background: var(--neu-bg); color: var(--color-on-surface); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); text-decoration: none;">
+          <span class="material-symbols-outlined" style="color: #fea619;">two_wheeler</span>
+          Portal Domiciliario (Rider)
+        </a>
         <a href="index.php" class="btn-customize" style="background: var(--neu-bg); color: var(--color-on-surface); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); text-decoration: none;">
           <span class="material-symbols-outlined" style="color: #dc2626;">storefront</span>
           Ver Aplicación Cliente
@@ -390,6 +394,35 @@ foreach ($orders as &$ord) {
     </div>
 
   </main>
+
+  <script>
+    // Sintetizador Web Audio API para alertas de cocina
+    const KitchenAudio = {
+      playAlert() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.25, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.4);
+        } catch(e) {}
+      }
+    };
+
+    // Si hubo un mensaje de acción en PHP, reproducir chime de confirmación
+    <?php if ($actionMessage): ?>
+      window.addEventListener('DOMContentLoaded', () => {
+        KitchenAudio.playAlert();
+      });
+    <?php endif; ?>
+  </script>
 
 </body>
 </html>
