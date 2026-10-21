@@ -20,6 +20,11 @@ const App = {
     cart: [],
     appliedCoupon: null,
     currentOrder: null, // Pedido activo para rastreo
+    leafletMap: null,
+    leafletMarkers: {},
+    leafletPolyline: null,
+    leafletTileLayer: null,
+    currentTileStyle: 'voyager',
     isCustomizerOpen: false,
     activeDishForCustomizer: null,
     customizerSelection: {
@@ -160,6 +165,11 @@ const App = {
       this.renderCheckout();
     } else if (screen === 'rastreo') {
       this.startTrackingPolling();
+      setTimeout(() => {
+        if (this.state.leafletMap) {
+          this.state.leafletMap.invalidateSize();
+        }
+      }, 250);
     } else {
       this.stopTrackingPolling();
     }
@@ -928,13 +938,30 @@ const App = {
     const order = this.state.currentOrder;
     if (!order) return;
 
-    document.getElementById('track-order-code').textContent = order.order_code;
-    document.getElementById('track-status-title').textContent = order.status_title;
-    document.getElementById('track-status-sub').textContent = order.status_subtext;
-    document.getElementById('track-eta').textContent = order.eta_minutes;
-    document.getElementById('track-progress-bar').style.width = order.progress_percent + '%';
+    // Código y títulos de la orden
+    const codeEl = document.getElementById('track-order-code');
+    if (codeEl) codeEl.textContent = order.order_code;
 
-    const stepIdx = order.step_index;
+    const currentBadge = document.getElementById('track-current-badge');
+    if (currentBadge) currentBadge.textContent = order.order_code;
+
+    const searchInput = document.getElementById('track-search-code-input');
+    if (searchInput && !searchInput.value) searchInput.value = order.order_code;
+
+    const titleEl = document.getElementById('track-status-title');
+    if (titleEl) titleEl.textContent = order.status_title;
+
+    const subEl = document.getElementById('track-status-sub');
+    if (subEl) subEl.textContent = order.status_subtext;
+
+    const etaEl = document.getElementById('track-eta');
+    if (etaEl) etaEl.textContent = order.eta_minutes;
+
+    const progressBar = document.getElementById('track-progress-bar');
+    if (progressBar) progressBar.style.width = (order.progress_percent || 25) + '%';
+
+    // Stepper de 4 pasos
+    const stepIdx = order.step_index !== undefined ? order.step_index : 0;
     for (let i = 0; i <= 3; i++) {
       const stepEl = document.getElementById(`track-step-${i}`);
       if (stepEl) {
@@ -947,16 +974,94 @@ const App = {
       }
     }
 
-    if (order.rider) {
-      document.getElementById('track-rider-name').textContent = order.rider.name;
-      document.getElementById('track-rider-vehicle').textContent = `${order.rider.vehicle} (${order.rider.plate})`;
-      document.getElementById('track-rider-rating').textContent = order.rider.rating;
-      document.getElementById('track-rider-street').textContent = order.rider.street;
-      document.getElementById('track-rider-img').src = order.rider.photo;
-      document.getElementById('track-rider-whatsapp').href = `https://wa.me/${order.rider.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hola ${order.rider.name}, te escribo por mi pedido ${order.order_code} de Antojo Virtual.`)}`;
-      document.getElementById('track-rider-call').href = `tel:${order.rider.phone.replace(/[^0-9]/g, '')}`;
+    // Actualización de Telemetría HUD sobre el mapa
+    const hudSpeed = document.getElementById('hud-speed');
+    if (hudSpeed) {
+      hudSpeed.textContent = `${order.telemetry?.speed_kmh !== undefined ? order.telemetry.speed_kmh : (order.status === 'en_camino' ? 32 : 0)} km/h`;
     }
 
+    const hudDistance = document.getElementById('hud-distance');
+    if (hudDistance) {
+      hudDistance.textContent = order.telemetry?.distance_km || (order.status === 'en_camino' ? '0.8 km' : '2.4 km');
+    }
+
+    const hudEta = document.getElementById('hud-eta');
+    if (hudEta) {
+      hudEta.textContent = order.eta_minutes || '15-20 min';
+    }
+
+    const hudStreet = document.getElementById('hud-street');
+    if (hudStreet) {
+      hudStreet.textContent = order.rider?.street || order.telemetry?.street || 'Av. Circunvalar';
+    }
+
+    const gpsIndicator = document.getElementById('track-gps-indicator');
+    if (gpsIndicator) {
+      gpsIndicator.textContent = order.telemetry?.gps_status ? 'GPS Neiva Satelital (3m)' : 'GPS Neiva Conectado';
+    }
+
+    // Información del Repartidor asignado
+    if (order.rider) {
+      const riderName = document.getElementById('track-rider-name');
+      if (riderName) riderName.textContent = order.rider.name;
+
+      const riderVeh = document.getElementById('track-rider-vehicle');
+      if (riderVeh) riderVeh.textContent = `${order.rider.vehicle} (${order.rider.plate})`;
+
+      const riderRating = document.getElementById('track-rider-rating');
+      if (riderRating) riderRating.textContent = order.rider.rating;
+
+      const riderStreet = document.getElementById('track-rider-street');
+      if (riderStreet) riderStreet.textContent = order.rider.street;
+
+      const riderImg = document.getElementById('track-rider-img');
+      if (riderImg) riderImg.src = order.rider.photo;
+
+      const waBtn = document.getElementById('track-rider-whatsapp');
+      if (waBtn) {
+        waBtn.href = `https://wa.me/${order.rider.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hola ${order.rider.name}, te escribo por mi pedido ${order.order_code} en Neiva de Antojo Virtual.`)}`;
+      }
+
+      const callBtn = document.getElementById('track-rider-call');
+      if (callBtn) {
+        callBtn.href = `tel:${order.rider.phone.replace(/[^0-9]/g, '')}`;
+      }
+    }
+
+    // Línea de Tiempo de Eventos en Tiempo Real (Timeline MySQL)
+    const timelineContainer = document.getElementById('track-timeline-events');
+    if (timelineContainer) {
+      if (order.timeline && Array.isArray(order.timeline) && order.timeline.length > 0) {
+        timelineContainer.innerHTML = order.timeline.map((evt, idx) => {
+          const isLatest = (idx === order.timeline.length - 1);
+          return `
+            <div class="timeline-event-item">
+              <div class="timeline-event-dot" style="${isLatest ? 'background: #fea619; box-shadow: 0 0 10px rgba(254,166,25,0.7);' : 'background: #10b981;'}"></div>
+              <div class="timeline-event-time">${evt.created_at || 'Reciente'}</div>
+              <div class="timeline-event-title">${evt.title || evt.event_title}</div>
+              <div class="timeline-event-desc">${evt.description}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        timelineContainer.innerHTML = `
+          <div class="timeline-event-item">
+            <div class="timeline-event-dot" style="background: #10b981;"></div>
+            <div class="timeline-event-time">${order.created_at || 'Hace un momento'}</div>
+            <div class="timeline-event-title">Pedido Registrado en Antojo Virtual</div>
+            <div class="timeline-event-desc">Orden ${order.order_code} recibida y despachada a cocina en Neiva.</div>
+          </div>
+          <div class="timeline-event-item">
+            <div class="timeline-event-dot" style="background: #fea619; box-shadow: 0 0 10px rgba(254,166,25,0.7);"></div>
+            <div class="timeline-event-time">En Curso</div>
+            <div class="timeline-event-title">${order.status_title}</div>
+            <div class="timeline-event-desc">${order.status_subtext}</div>
+          </div>
+        `;
+      }
+    }
+
+    // Lista de platos e ítems
     const trackItemsContainer = document.getElementById('track-order-items');
     if (trackItemsContainer && order.items) {
       trackItemsContainer.innerHTML = order.items.map(it => `
@@ -970,19 +1075,157 @@ const App = {
       `).join('');
     }
 
-    document.getElementById('track-order-total').textContent = order.payment?.total_formatted || '$0';
-    document.getElementById('track-order-address').textContent = `${order.customer?.address} (${order.customer?.comuna})`;
+    const orderTotal = document.getElementById('track-order-total');
+    if (orderTotal) orderTotal.textContent = order.payment?.total_formatted || '$0';
 
+    const orderAddr = document.getElementById('track-order-address');
+    if (orderAddr) orderAddr.textContent = `${order.customer?.address || ''} (${order.customer?.comuna || ''})`;
+
+    // Desplegar mapa de Neiva en vivo
     this.renderNeivaMap(order);
   },
 
-  // Simulación del mapa de Neiva Neumórfico con Canvas
+  // Despliegue del Mapa Leaflet Interactivo de Neiva con soporte HD Canvas
   renderNeivaMap(order) {
+    const mapContainer = document.getElementById('neiva-interactive-map');
+    const canvasContainer = document.getElementById('neiva-map-canvas');
+
+    if (typeof L !== 'undefined' && mapContainer) {
+      mapContainer.style.display = 'block';
+      if (canvasContainer) canvasContainer.style.display = 'none';
+
+      // Coordenadas reales de Neiva (Restaurante, Repartidor, Destino)
+      const restLat = order.route?.restaurant?.lat || 2.9273;
+      const restLng = order.route?.restaurant?.lng || -75.2819;
+      const riderLat = order.route?.rider?.lat || 2.9300;
+      const riderLng = order.route?.rider?.lng || -75.2850;
+      const destLat = order.route?.destination?.lat || 2.9290;
+      const destLng = order.route?.destination?.lng || -75.2860;
+
+      const restCoords = [restLat, restLng];
+      const riderCoords = [riderLat, riderLng];
+      const destCoords = [destLat, destLng];
+
+      // Inicializar Leaflet map si no está creado
+      if (!this.state.leafletMap) {
+        this.state.leafletMap = L.map('neiva-interactive-map', {
+          zoomControl: false,
+          attributionControl: false
+        }).setView(riderCoords, 15);
+
+        // Capa de mapa Carto Voyager estilo Neumórfico Suave
+        this.state.leafletTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          subdomains: 'abcd'
+        }).addTo(this.state.leafletMap);
+      }
+
+      // 1. Marcador Restaurante en Neiva
+      const restIcon = L.divIcon({
+        className: 'leaflet-custom-marker',
+        html: '<div class="rest-avatar-bubble" title="Restaurante">🍔</div>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -20]
+      });
+
+      if (!this.state.leafletMarkers.restaurant) {
+        this.state.leafletMarkers.restaurant = L.marker(restCoords, { icon: restIcon })
+          .addTo(this.state.leafletMap)
+          .bindPopup(`<b>${order.restaurant?.name || 'La Estación Burger'}</b><br><small>${order.restaurant?.address || 'Cra 12 #10-34, Centro Neiva'}</small>`);
+      } else {
+        this.state.leafletMarkers.restaurant.setLatLng(restCoords);
+      }
+
+      // 2. Marcador Destino del Cliente en Neiva
+      const destIcon = L.divIcon({
+        className: 'leaflet-custom-marker',
+        html: '<div class="dest-avatar-bubble" title="Tu Dirección">🏠</div>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -20]
+      });
+
+      if (!this.state.leafletMarkers.destination) {
+        this.state.leafletMarkers.destination = L.marker(destCoords, { icon: destIcon })
+          .addTo(this.state.leafletMap)
+          .bindPopup(`<b>Tu Dirección de Entrega</b><br><small>${order.customer?.address || 'Neiva'} (${order.customer?.comuna || ''})</small>`);
+      } else {
+        this.state.leafletMarkers.destination.setLatLng(destCoords);
+      }
+
+      // 3. Marcador del Repartidor con Onda Radar Neumórfica
+      const riderIcon = L.divIcon({
+        className: 'leaflet-custom-marker',
+        html: `
+          <div class="rider-map-marker">
+            <div class="rider-radar-ripple"></div>
+            <div class="rider-avatar-bubble" title="Repartidor en Vivo">🛵</div>
+          </div>
+        `,
+        iconSize: [54, 54],
+        iconAnchor: [27, 27],
+        popupAnchor: [0, -27]
+      });
+
+      const riderPopupContent = `
+        <div style="font-size: 0.85rem; line-height: 1.4;">
+          <strong style="color: #0f172a; font-size: 0.95rem;">${order.rider?.name || 'Carlos Mendoza'}</strong><br>
+          <span style="color: #64748b;">${order.rider?.vehicle || 'Moto'} (${order.rider?.plate || 'HUI-84E'})</span><br>
+          <span style="color: #dc2626; font-weight: 800;">● ${order.rider?.street || 'En ruta por Neiva'}</span><br>
+          <span style="color: #15803d; font-weight: 700;">Velocidad: ${order.telemetry?.speed_kmh || 32} km/h</span>
+        </div>
+      `;
+
+      if (!this.state.leafletMarkers.rider) {
+        this.state.leafletMarkers.rider = L.marker(riderCoords, { icon: riderIcon })
+          .addTo(this.state.leafletMap)
+          .bindPopup(riderPopupContent);
+      } else {
+        this.state.leafletMarkers.rider.setLatLng(riderCoords);
+        if (this.state.leafletMarkers.rider.getPopup()) {
+          this.state.leafletMarkers.rider.getPopup().setContent(riderPopupContent);
+        }
+      }
+
+      // 4. Polilínea de la Ruta Trazada en Neiva
+      if (this.state.leafletPolyline) {
+        this.state.leafletPolyline.remove();
+      }
+      this.state.leafletPolyline = L.polyline([restCoords, riderCoords, destCoords], {
+        color: '#dc2626',
+        weight: 4,
+        opacity: 0.85,
+        dashArray: '8, 8',
+        lineCap: 'round'
+      }).addTo(this.state.leafletMap);
+
+      // Ajustar encuadre la primera vez
+      if (!this._mapBoundsSet) {
+        const bounds = L.latLngBounds([restCoords, riderCoords, destCoords]);
+        this.state.leafletMap.fitBounds(bounds, { padding: [55, 55], maxZoom: 16 });
+        this._mapBoundsSet = true;
+      }
+
+      setTimeout(() => {
+        if (this.state.leafletMap) this.state.leafletMap.invalidateSize();
+      }, 150);
+
+    } else if (canvasContainer) {
+      // Fallback si no está disponible Leaflet o conexión externa
+      if (mapContainer) mapContainer.style.display = 'none';
+      canvasContainer.style.display = 'block';
+      this.renderNeivaMapCanvas(order);
+    }
+  },
+
+  // Fallback Canvas Neumórfico de Neiva
+  renderNeivaMapCanvas(order) {
     const canvas = document.getElementById('neiva-map-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = canvas.width = canvas.parentElement.clientWidth || 600;
-    const h = canvas.height = 330;
+    const h = canvas.height = 360;
 
     // Fondo estilo mapa de arcilla suave neumórfica
     ctx.fillStyle = '#e5ebf3';
@@ -1090,6 +1333,152 @@ const App = {
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 13px sans-serif';
     ctx.fillText('🛵', riderX - 9, riderY + 5);
+  },
+
+  // Controles del Mapa de Neiva
+  centerMapOnRider() {
+    const rider = this.state.currentOrder?.route?.rider;
+    if (this.state.leafletMap && rider) {
+      this.state.leafletMap.flyTo([rider.lat, rider.lng], 16, { animate: true, duration: 1.2 });
+      if (this.state.leafletMarkers.rider) {
+        this.state.leafletMarkers.rider.openPopup();
+      }
+      this.showToast('Centrado en el repartidor en Neiva');
+    } else {
+      this.showToast('Ubicación del repartidor activa');
+    }
+  },
+
+  centerMapOnRoute() {
+    const route = this.state.currentOrder?.route;
+    if (this.state.leafletMap && route) {
+      const bounds = L.latLngBounds([
+        [route.restaurant.lat, route.restaurant.lng],
+        [route.rider.lat, route.rider.lng],
+        [route.destination.lat, route.destination.lng]
+      ]);
+      this.state.leafletMap.fitBounds(bounds, { padding: [50, 50], animate: true });
+      this.showToast('Mostrando ruta completa en Neiva');
+    }
+  },
+
+  toggleMapTilesLayer() {
+    if (!this.state.leafletMap) return;
+
+    const styles = {
+      voyager: {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        next: 'osm',
+        label: 'Callejero OpenStreetMap'
+      },
+      osm: {
+        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        next: 'dark',
+        label: 'Modo Noche Satelital'
+      },
+      dark: {
+        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        next: 'voyager',
+        label: 'Modo Neumórfico Suave'
+      }
+    };
+
+    const cur = this.state.currentTileStyle || 'voyager';
+    const config = styles[cur] || styles.voyager;
+
+    if (this.state.leafletTileLayer) {
+      this.state.leafletTileLayer.remove();
+    }
+
+    this.state.leafletTileLayer = L.tileLayer(config.url, {
+      maxZoom: 19,
+      subdomains: 'abcd'
+    }).addTo(this.state.leafletMap);
+
+    this.state.currentTileStyle = config.next;
+    this.showToast(`Capa de mapa: ${config.label}`);
+  },
+
+  // Buscador de Pedido por código o teléfono
+  searchOrderTracking() {
+    const input = document.getElementById('track-search-code-input');
+    const code = (input ? input.value : '').trim();
+    if (!code) {
+      this.showToast('Por favor escribe tu código de pedido o número celular.');
+      return;
+    }
+    this.showToast(`Buscando orden ${code}...`);
+    this.fetchOrderForTracking(code, false);
+  },
+
+  // Ver Factura y Comprobante Oficial DIAN para la orden en pantalla
+  viewReceiptForCurrentOrder() {
+    const order = this.state.currentOrder;
+    if (!order) {
+      this.showToast('No hay una orden activa seleccionada.');
+      return;
+    }
+
+    const receiptModal = document.getElementById('payment-receipt-modal');
+    if (!receiptModal) return;
+
+    const p = order.payment || {};
+    const inv = order.invoice || {};
+    const customer = order.customer || {};
+
+    const invNum = document.getElementById('receipt-inv-number');
+    if (invNum) invNum.textContent = p.invoice_number || inv.invoice_number || 'FE-ANTOJO-2026-00001';
+
+    const refCode = document.getElementById('receipt-ref-code');
+    if (refCode) refCode.textContent = p.transaction_reference || p.reference || ('PAY-NV-' + (order.order_code ? order.order_code.replace(/[^A-Za-z0-9]/g, '') : '8492'));
+
+    const authCode = document.getElementById('receipt-auth-code');
+    if (authCode) authCode.textContent = p.authorization_code || 'AUT-948123';
+
+    const methodLabel = document.getElementById('receipt-method-label');
+    if (methodLabel) methodLabel.textContent = p.bank_name || p.method_title || (p.method === 'pse' ? 'PSE - Bancolombia' : 'Tarjeta Débito/Crédito');
+
+    const dt = document.getElementById('receipt-datetime');
+    if (dt) dt.textContent = order.created_at || new Date().toLocaleString('es-CO');
+
+    const custName = document.getElementById('receipt-customer-name');
+    if (custName) custName.textContent = customer.name || 'Mateo Rodríguez';
+
+    const custDoc = document.getElementById('receipt-customer-doc');
+    if (custDoc) custDoc.textContent = customer.phone ? `Tel / CC: ${customer.phone}` : 'CC 1075304128';
+
+    const subtotalEl = document.getElementById('receipt-subtotal');
+    if (subtotalEl) subtotalEl.textContent = p.subtotal_formatted || (p.subtotal ? '$' + Number(p.subtotal).toLocaleString('es-CO') : '$35.900');
+
+    const deliveryEl = document.getElementById('receipt-delivery');
+    if (deliveryEl) deliveryEl.textContent = p.delivery_fee_formatted || '$3.500';
+
+    const tipEl = document.getElementById('receipt-tip');
+    if (tipEl) tipEl.textContent = p.tip_formatted || '$1.000';
+
+    const totalEl = document.getElementById('receipt-total');
+    if (totalEl) totalEl.textContent = p.total_formatted || '$40.400';
+
+    const totalNum = p.total || 40400;
+    const taxApprox = Math.round(totalNum * 0.08 / 1.08);
+    const taxEl = document.getElementById('receipt-tax');
+    if (taxEl) taxEl.textContent = '$' + taxApprox.toLocaleString('es-CO');
+
+    const discRow = document.getElementById('receipt-discount-row');
+    const discEl = document.getElementById('receipt-discount');
+    if (p.discount && p.discount > 0) {
+      if (discRow) discRow.style.display = 'flex';
+      if (discEl) discEl.textContent = p.discount_formatted || `-$${Number(p.discount).toLocaleString('es-CO')}`;
+    } else {
+      if (discRow) discRow.style.display = 'none';
+    }
+
+    const cufeEl = document.getElementById('receipt-cufe-code');
+    if (cufeEl) {
+      cufeEl.textContent = inv.cufe_code || '8f89c4501b87a9d04ef124803923a1e948c27940182390abcef182903810293849102839401829384910293849102938';
+    }
+
+    receiptModal.classList.add('open');
   },
 
   // Simulación rápida de avance de orden (para demostración al cliente)

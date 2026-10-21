@@ -17,10 +17,11 @@ $db = getDB();
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   
-  <!-- Hojas de Estilos Neumórficas -->
+  <!-- Hojas de Estilos Neumórficas & Mapas -->
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/auth.css">
   <link rel="stylesheet" href="assets/css/payments.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 </head>
 <body>
 
@@ -687,7 +688,38 @@ $db = getDB();
   <!-- =========================================================
        PANTALLA 3: RASTREO EN VIVO (LIVE TRACKING NEUMÓRFICO)
        ========================================================= -->
+  <!-- =========================================================
+       PANTALLA 3: RASTREO EN VIVO Y MAPA SATELITAL DE NEIVA
+       ========================================================= -->
   <section id="screen-rastreo" class="container" style="display: none; margin: 2rem auto;">
+    
+    <!-- Buscador Rápido de Pedidos para el Cliente -->
+    <div class="track-search-card">
+      <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <span class="material-symbols-outlined" style="color: #dc2626; font-size: 26px;">manage_search</span>
+        <div>
+          <h4 style="margin: 0; font-family: var(--font-epilogue); font-size: 1.05rem; font-weight: 800; color: var(--color-on-surface);">
+            Consultar Rastreo de Pedido
+          </h4>
+          <span style="font-size: 0.78rem; color: var(--color-on-surface-variant);">
+            Ingresa tu código de orden de Neiva o tu número de celular
+          </span>
+        </div>
+      </div>
+
+      <div class="track-search-input-wrapper">
+        <input type="text" id="track-search-code-input" class="form-input" placeholder="Ej: #NV-8492" style="box-shadow: var(--neu-inset-sm); text-transform: uppercase;">
+        <button onclick="App.searchOrderTracking()" class="btn-customize" style="background: var(--color-primary-neu); color: #fff; box-shadow: var(--color-primary-neu-shadow);">
+          <span class="material-symbols-outlined" style="font-size: 18px;">search</span>
+          Buscar
+        </button>
+      </div>
+
+      <div id="track-current-pill" style="font-size: 0.8rem; font-weight: 800; color: var(--color-on-surface-variant); background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); padding: 0.5rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
+        Orden Activa: <strong id="track-current-badge" style="color: #dc2626;">#NV-8492</strong>
+      </div>
+    </div>
+
     <div style="background: var(--neu-bg); border-radius: var(--radius-lg); box-shadow: var(--neu-extruded-lg); border: 1px solid var(--color-border-subtle); padding: 2.25rem;">
       
       <!-- Encabezado del Pedido -->
@@ -695,7 +727,9 @@ $db = getDB();
         <div>
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span class="material-symbols-outlined" style="color: #dc2626;">moped</span>
-            <span style="font-size: 0.85rem; font-weight: 800; color: var(--color-on-surface-variant); text-transform: uppercase;">Rastreo en Tiempo Real</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: var(--color-on-surface-variant); text-transform: uppercase;">
+              Telemetría & GPS en Tiempo Real
+            </span>
           </div>
           <h2 style="font-family: var(--font-epilogue); font-size: 1.95rem; font-weight: 900; color: var(--color-on-surface); margin: 0;">
             Pedido <span id="track-order-code" style="color: #dc2626;">#NV-8492</span>
@@ -705,11 +739,15 @@ $db = getDB();
           </p>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
           <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); padding: 0.75rem 1.35rem; border-radius: var(--radius-md); text-align: right;">
             <div style="font-size: 0.75rem; font-weight: 800; color: #855300; text-transform: uppercase;">Tiempo Estimado</div>
             <div id="track-eta" style="font-family: var(--font-epilogue); font-size: 1.45rem; font-weight: 900; color: #b70011;">15-20 min</div>
           </div>
+          <button onclick="App.viewReceiptForCurrentOrder()" class="btn-customize" style="background: var(--neu-bg); color: #0284c7; box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); font-size: 0.85rem; padding: 0.75rem 1.15rem;" title="Ver comprobante de pago oficial y factura electrónica">
+            <span class="material-symbols-outlined" style="font-size: 18px;">receipt_long</span>
+            Ver Factura
+          </button>
           <button onclick="App.autoAdvanceDemoOrder()" class="btn-customize" style="background: var(--neu-bg); color: var(--color-on-surface); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); font-size: 0.85rem; padding: 0.75rem 1.15rem;" title="Simular que el pedido avanza de etapa">
             <span class="material-symbols-outlined" style="font-size: 18px; color: #fea619;">fast_forward</span>
             Simular Avance
@@ -761,61 +799,136 @@ $db = getDB();
       </div>
 
       <!-- Estado Destacado Neumórfico -->
-      <div style="background: var(--neu-bg); box-shadow: var(--neu-inset); border-radius: var(--radius-md); padding: 1.25rem 1.75rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.25rem; border: 1px solid var(--color-border-subtle);">
+      <div style="background: var(--neu-bg); box-shadow: var(--neu-inset); border-radius: var(--radius-md); padding: 1.25rem 1.75rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.25rem; border: 1px solid var(--color-border-subtle); flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 0.85rem;">
-          <span class="material-symbols-outlined" style="color: #dc2626; font-size: 30px;">restaurant_menu</span>
+          <span class="material-symbols-outlined" style="color: #dc2626; font-size: 32px;">restaurant_menu</span>
           <div>
-            <div id="track-status-title" style="font-weight: 800; font-size: 1.1rem; color: var(--color-on-surface);">Carbón al Rojo Vivo & Cocción</div>
-            <div style="font-size: 0.85rem; color: var(--color-on-surface-variant);">El restaurante en Neiva prepara tu orden con los mejores ingredientes.</div>
+            <div id="track-status-title" style="font-weight: 800; font-size: 1.15rem; color: var(--color-on-surface);">Carbón al Rojo Vivo & Cocción</div>
+            <div style="font-size: 0.85rem; color: var(--color-on-surface-variant);">El restaurante en Neiva prepara tu orden con los mejores ingredientes y carne al carbón.</div>
           </div>
         </div>
-        <span style="font-size: 0.8rem; background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); padding: 0.45rem 0.95rem; border-radius: 9999px; font-weight: 800; color: #1a8340; border: 1px solid var(--color-border-subtle);">
-          ● Conexión MySQL Activa
-        </span>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="hud-gps-pill">
+            <span class="hud-gps-dot"></span>
+            <span id="track-gps-indicator">GPS Neiva Conectado</span>
+          </span>
+          <span style="font-size: 0.8rem; background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); padding: 0.45rem 0.95rem; border-radius: 9999px; font-weight: 800; color: #1a8340; border: 1px solid var(--color-border-subtle);">
+            ● Conexión MySQL Activa
+          </span>
+        </div>
       </div>
 
-      <!-- Grilla: Mapa de Neiva y Tarjeta del Repartidor -->
-      <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
-        <!-- Mapa interactivo de Neiva -->
+      <!-- Grilla: Mapa Interactivo de Neiva y Tarjeta del Repartidor -->
+      <div style="display: grid; grid-template-columns: 1.55fr 1fr; gap: 2rem;">
+        
+        <!-- Columna Izquierda: Mapa con Telemetría HUD -->
         <div>
-          <h4 style="font-family: var(--font-epilogue); font-size: 1.15rem; font-weight: 800; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span class="material-symbols-outlined" style="color: #dc2626;">map</span>
-            Ruta de Entrega en Neiva, Huila
-          </h4>
-          <div class="map-canvas-container">
-            <canvas id="neiva-map-canvas"></canvas>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+            <h4 style="font-family: var(--font-epilogue); font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              <span class="material-symbols-outlined" style="color: #dc2626;">location_searching</span>
+              Ubicación Satelital & Ruta en Neiva (GPS en Vivo)
+            </h4>
+            <span style="font-size: 0.75rem; color: var(--color-on-surface-variant); font-weight: 700;">
+              Huila, Colombia
+            </span>
+          </div>
+
+          <!-- Contenedor del Mapa con HUD y Controles -->
+          <div class="map-view-wrapper">
+            
+            <!-- HUD Flotante de Telemetría sobre el mapa -->
+            <div class="tracking-hud-overlay">
+              <div class="hud-item">
+                <span class="material-symbols-outlined" style="color: #dc2626; font-size: 20px;">speed</span>
+                <div>
+                  <span class="hud-item-label">Velocidad</span>
+                  <span id="hud-speed" class="hud-item-value">32 km/h</span>
+                </div>
+              </div>
+
+              <div class="hud-item">
+                <span class="material-symbols-outlined" style="color: #fea619; font-size: 20px;">straighten</span>
+                <div>
+                  <span class="hud-item-label">Distancia</span>
+                  <span id="hud-distance" class="hud-item-value">0.8 km</span>
+                </div>
+              </div>
+
+              <div class="hud-item">
+                <span class="material-symbols-outlined" style="color: #15803d; font-size: 20px;">schedule</span>
+                <div>
+                  <span class="hud-item-label">Tiempo</span>
+                  <span id="hud-eta" class="hud-item-value">6-10 min</span>
+                </div>
+              </div>
+
+              <div class="hud-item" style="max-width: 170px;">
+                <span class="material-symbols-outlined" style="color: #0284c7; font-size: 20px;">near_me</span>
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span class="hud-item-label">Vía Actual</span>
+                  <span id="hud-street" class="hud-item-value" style="font-size: 0.78rem;">Av. Circunvalar</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mapa Leaflet Interactivo -->
+            <div id="neiva-interactive-map"></div>
+
+            <!-- Canvas Fallback HD por si no hay conexión de tiles -->
+            <canvas id="neiva-map-canvas" style="display: none; width: 100%; height: 420px;"></canvas>
+
+            <!-- Controles Flotantes del Mapa -->
+            <div class="map-floating-controls">
+              <button onclick="App.centerMapOnRider()" class="map-control-btn" title="Centrar mapa en la moto del repartidor">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #dc2626;">my_location</span>
+                <span>Rider</span>
+              </button>
+              <button onclick="App.centerMapOnRoute()" class="map-control-btn" title="Ver la ruta completa desde restaurante hasta tu casa">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #0284c7;">route</span>
+                <span>Ruta</span>
+              </button>
+              <button onclick="App.toggleMapTilesLayer()" class="map-control-btn" title="Alternar capa satelital o callejero">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #16a34a;">layers</span>
+                <span>Capa</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Tarjeta del Repartidor (Rider Neumórfico) -->
+        <!-- Columna Derecha: Tarjeta del Repartidor & Detalles -->
         <div>
           <h4 style="font-family: var(--font-epilogue); font-size: 1.15rem; font-weight: 800; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
             <span class="material-symbols-outlined" style="color: #fea619;">person_pin</span>
             Tu Repartidor Asignado
           </h4>
+
           <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.35rem;">
-              <img id="track-rider-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" alt="Rider" style="width: 68px; height: 68px; border-radius: 9999px; object-fit: cover; box-shadow: var(--neu-extruded-sm); border: 3px solid #fea619;">
+              <img id="track-rider-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" alt="Rider" style="width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; box-shadow: var(--neu-extruded-sm); border: 3px solid #fea619;">
               <div>
-                <h5 id="track-rider-name" style="font-family: var(--font-epilogue); font-size: 1.2rem; font-weight: 800; color: var(--color-on-surface); margin: 0;">Carlos Mendoza</h5>
-                <div style="display: flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; font-weight: 800; color: #855300; margin-top: 0.25rem;">
+                <h5 id="track-rider-name" style="font-family: var(--font-epilogue); font-size: 1.25rem; font-weight: 900; color: var(--color-on-surface); margin: 0;">Carlos Mendoza</h5>
+                <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 800; color: #855300; margin-top: 0.25rem;">
                   <span class="material-symbols-outlined" style="font-size: 16px; color: #fea619;">star</span>
-                  <span id="track-rider-rating">4.9</span> (350+ entregas)
+                  <span id="track-rider-rating">4.9</span> (412 entregas en Neiva)
                 </div>
-                <div id="track-rider-vehicle" style="font-size: 0.8rem; color: var(--color-on-surface-variant);">Bajaj Pulsar 200 NS - Negra (HUI-84E)</div>
+                <div id="track-rider-vehicle" style="font-size: 0.8rem; color: var(--color-on-surface-variant); font-weight: 600; margin-top: 2px;">
+                  Bajaj Pulsar 200 NS - Negra (HUI-84E)
+                </div>
               </div>
             </div>
 
-            <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1.35rem; border: 1px solid var(--color-border-subtle);">
-              <strong>Ubicación actual:</strong>
-              <div id="track-rider-street" style="color: #dc2626; font-weight: 800; margin-top: 0.25rem;">
-                Av. Circunvalar con Calle 10
+            <!-- Posición en la Calle -->
+            <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); padding: 0.95rem 1.15rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1.35rem; border: 1px solid var(--color-border-subtle);">
+              <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: var(--color-on-surface-variant);">Ubicación Actual en Neiva:</span>
+              <div id="track-rider-street" style="color: #dc2626; font-weight: 900; font-size: 0.95rem; margin-top: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">navigation</span>
+                <span>Av. Circunvalar con Calle 10</span>
               </div>
             </div>
 
-            <!-- Acciones de contacto directo -->
+            <!-- Acciones de Contacto Directo -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
-              <a id="track-rider-whatsapp" href="#" target="_blank" class="btn-customize" style="background: linear-gradient(145deg, #1fa350, #146b34); justify-content: center; text-decoration: none; box-shadow: 5px 5px 12px rgba(26,131,64,0.35);">
+              <a id="track-rider-whatsapp" href="#" target="_blank" class="btn-customize" style="background: linear-gradient(145deg, #1fa350, #146b34); justify-content: center; text-decoration: none; box-shadow: 5px 5px 12px rgba(26,131,64,0.35); color: #fff;">
                 <span class="material-symbols-outlined">chat</span>
                 WhatsApp
               </a>
@@ -837,6 +950,17 @@ $db = getDB();
               <span id="track-order-total" style="color: #dc2626;">$40.400</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Línea de Tiempo de Eventos en Vivo (Timeline MySQL) -->
+      <div style="margin-top: 2.25rem; border-top: 1px solid var(--color-border-subtle); padding-top: 1.75rem;">
+        <h4 style="font-family: var(--font-epilogue); font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span class="material-symbols-outlined" style="color: #10b981;">history</span>
+          Historial & Eventos del Pedido en Tiempo Real
+        </h4>
+        <div id="track-timeline-events" class="tracking-timeline-box">
+          <!-- Render dinámico desde MySQL en app.js -->
         </div>
       </div>
 
@@ -1208,7 +1332,8 @@ $db = getDB();
     </div>
   </div>
 
-  <!-- Scripts: Auth (JWT) carga primero, App después -->
+  <!-- Scripts: Leaflet (Mapas), Auth (JWT) y App Principal -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js"></script>
 </body>

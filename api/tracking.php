@@ -99,17 +99,93 @@ try {
         default => 'Procesando tu pedido en Neiva'
     };
 
-    // Puntos de ruta simulados en Neiva (Coordenadas reales de Neiva)
-    $neivaWaypoints = [
-        'restaurant' => ['lat' => 2.9273, 'lng' => -75.2819, 'name' => 'La Estación Burger (Centro)'],
-        'rider' => match($status) {
-            'recibido' => ['lat' => 2.9273, 'lng' => -75.2819, 'street' => 'Restaurante en Centro'],
-            'preparando' => ['lat' => 2.9275, 'lng' => -75.2825, 'street' => 'Cra 12 con Calle 10 (Empacando)'],
-            'en_camino' => ['lat' => 2.9315, 'lng' => -75.2885, 'street' => 'Av. Circunvalar con Calle 16'],
-            'entregado' => ['lat' => 2.9290, 'lng' => -75.2860, 'street' => 'En tu dirección (Cra 5 #18-42)'],
-            default => ['lat' => 2.9273, 'lng' => -75.2819, 'street' => 'Centro de Neiva']
+    // Mapeo de coordenadas reales de las Comunas de Neiva
+    $comunaCoords = [
+        'Comuna 1' => ['lat' => 2.9460, 'lng' => -75.2980, 'zone' => 'Cándido / Camilo Torres'],
+        'Comuna 2' => ['lat' => 2.9420, 'lng' => -75.2860, 'zone' => 'Las Granjas / Los Mártires'],
+        'Comuna 3' => ['lat' => 2.9360, 'lng' => -75.2840, 'zone' => 'Quirinal / Santa Inés'],
+        'Comuna 4' => ['lat' => 2.9280, 'lng' => -75.2820, 'zone' => 'Centro Histórico'],
+        'Comuna 5' => ['lat' => 2.9240, 'lng' => -75.2780, 'zone' => 'Altico / La Floresta'],
+        'Comuna 6' => ['lat' => 2.9090, 'lng' => -75.2750, 'zone' => 'Timanco / Puertas del Sol'],
+        'Comuna 7' => ['lat' => 2.9250, 'lng' => -75.2630, 'zone' => 'Ipanema / Las Brisas'],
+        'Comuna 8' => ['lat' => 2.9350, 'lng' => -75.2600, 'zone' => 'Las Américas'],
+        'Comuna 9' => ['lat' => 2.9520, 'lng' => -75.2920, 'zone' => 'Luis Carlos Galán'],
+        'Comuna 10' => ['lat' => 2.9180, 'lng' => -75.2500, 'zone' => 'Las Palmas / El Caguán']
+    ];
+
+    // Detectar coordenadas del destino según la comuna del pedido
+    $destCoords = ['lat' => 2.9290, 'lng' => -75.2860];
+    foreach ($comunaCoords as $prefix => $cData) {
+        if (stripos($order['comuna'], $prefix) !== false) {
+            $destCoords = ['lat' => $cData['lat'], 'lng' => $cData['lng']];
+            break;
+        }
+    }
+
+    $restLat = 2.9273;
+    $restLng = -75.2819;
+
+    // Calcular posición del repartidor según el avance del pedido
+    $riderLat = match($status) {
+        'recibido' => $restLat,
+        'preparando' => $restLat + 0.0010,
+        'en_camino' => $restLat + (($destCoords['lat'] - $restLat) * 0.65),
+        'entregado' => $destCoords['lat'],
+        default => $restLat
+    };
+
+    $riderLng = match($status) {
+        'recibido' => $restLng,
+        'preparando' => $restLng - 0.0008,
+        'en_camino' => $restLng + (($destCoords['lng'] - $restLng) * 0.65),
+        'entregado' => $destCoords['lng'],
+        default => $restLng
+    };
+
+    $riderStreet = match($status) {
+        'recibido' => 'En el restaurante (Cra 12 #10-34, Centro)',
+        'preparando' => 'Alistando maleta térmica en Cra 12 con Calle 10',
+        'en_camino' => 'En ruta por Av. Circunvalar con Calle 14',
+        'entregado' => 'En tu dirección de entrega (' . $order['delivery_address'] . ')',
+        default => 'Centro de Neiva'
+    };
+
+    $telemetry = [
+        'speed_kmh' => match($status) {
+            'en_camino' => 32,
+            'preparando' => 0,
+            'recibido' => 0,
+            'entregado' => 0,
+            default => 0
         },
-        'destination' => ['lat' => 2.9290, 'lng' => -75.2860, 'name' => $order['delivery_address']]
+        'distance_km' => match($status) {
+            'recibido' => '2.4 km',
+            'preparando' => '2.4 km',
+            'en_camino' => '0.8 km',
+            'entregado' => '0.0 km',
+            default => '1.5 km'
+        },
+        'battery_percent' => 86,
+        'gps_status' => 'Conexión GPS Satelital Neiva (Precisión 3m)',
+        'updated_at' => date('h:i:s A')
+    ];
+
+    $neivaWaypoints = [
+        'restaurant' => [
+            'lat' => $restLat, 
+            'lng' => $restLng, 
+            'name' => 'La Estación Burger (Cra 12 #10-34, Centro)'
+        ],
+        'rider' => [
+            'lat' => $riderLat, 
+            'lng' => $riderLng, 
+            'street' => $riderStreet
+        ],
+        'destination' => [
+            'lat' => $destCoords['lat'], 
+            'lng' => $destCoords['lng'], 
+            'name' => $order['delivery_address'] . ' (' . $order['comuna'] . ')'
+        ]
     ];
 
     jsonResponse([
@@ -123,6 +199,7 @@ try {
         'progress_percent' => $percent,
         'eta_minutes' => $etaMinutes,
         'created_at' => $order['created_at'],
+        'telemetry' => $telemetry,
         'customer' => [
             'name' => $order['customer_name'],
             'phone' => $order['customer_phone'],
@@ -150,7 +227,7 @@ try {
             'plate' => $order['rider_plate'] ?? 'HUI-84E',
             'rating' => (float)($order['rider_rating'] ?? 4.9),
             'photo' => $order['rider_photo'] ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-            'street' => $neivaWaypoints['rider']['street']
+            'street' => $riderStreet
         ],
         'route' => $neivaWaypoints,
         'items' => $items,
