@@ -10,6 +10,13 @@
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/jwt.php';
 
+// Si el usuario abre el endpoint directamente desde un navegador web, redirigir a la vista visual
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'text/html') !== false && !isset($_GET['json']) && !isset($_GET['raw'])) {
+    $rid = isset($_GET['restaurant_id']) ? (int)$_GET['restaurant_id'] : 1;
+    header("Location: ../reviews.php?restaurant_id=" . $rid);
+    exit;
+}
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');

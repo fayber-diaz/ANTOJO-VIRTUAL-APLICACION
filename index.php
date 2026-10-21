@@ -87,6 +87,12 @@ $db = getDB();
             <span>Rider App</span>
           </a>
 
+          <!-- Reseñas de Clientes -->
+          <a href="reviews.php" target="_blank" class="btn-admin-link" title="Ver calificaciones y reseñas de clientes">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #f59e0b;">star</span>
+            <span>Reseñas</span>
+          </a>
+
           <!-- Auth JWT: Botón de usuario / login -->
           <div id="header-auth-btn"></div>
 

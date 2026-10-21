@@ -392,6 +392,7 @@ INSERT INTO `coupons` (`code`, `discount_amount`, `min_purchase`, `description`,
 CREATE TABLE `orders` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` INT DEFAULT NULL,
+  `restaurant_id` INT DEFAULT 1,
   `order_code` VARCHAR(30) NOT NULL UNIQUE,
   `customer_name` VARCHAR(100) NOT NULL,
   `customer_phone` VARCHAR(30) NOT NULL,

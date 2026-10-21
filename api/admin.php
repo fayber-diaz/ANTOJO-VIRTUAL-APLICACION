@@ -34,8 +34,13 @@ try {
         }
 
         if (!$orderId && !empty($orderCode)) {
-            $stmtFind = $db->prepare("SELECT id FROM `orders` WHERE `order_code` = :code LIMIT 1");
-            $stmtFind->execute([':code' => $orderCode]);
+            $cleanCode = ltrim($orderCode, '#');
+            $stmtFind = $db->prepare("SELECT id FROM `orders` WHERE `order_code` = :code OR `order_code` = :hashcode OR `order_code` = :cleancode LIMIT 1");
+            $stmtFind->execute([
+                ':code' => $orderCode,
+                ':hashcode' => '#' . $cleanCode,
+                ':cleancode' => $cleanCode
+            ]);
             $found = $stmtFind->fetch();
             if ($found) {
                 $orderId = (int)$found['id'];

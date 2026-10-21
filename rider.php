@@ -27,28 +27,51 @@ $rider = $stmtRider->fetch() ?: [
 ];
 
 // Consultar pedidos activos para entrega en Neiva
-$stmtOrders = $db->query("
-    SELECT o.*, p.payment_method, p.status as payment_status, p.amount, p.bank_name,
-           r.name as rest_name, r.address as rest_address, r.phone as rest_phone
-    FROM `orders` o
-    LEFT JOIN `payments` p ON o.id = p.order_id
-    LEFT JOIN `restaurants` r ON o.restaurant_id = r.id
-    WHERE o.status IN ('recibido', 'preparando', 'en_camino')
-    ORDER BY o.id DESC
-");
-$activeOrders = $stmtOrders->fetchAll();
-
-// Si no hay pedidos en curso, traer el último para demostración
-if (empty($activeOrders)) {
-    $stmtLast = $db->query("
+$activeOrders = [];
+try {
+    $stmtOrders = $db->query("
         SELECT o.*, p.payment_method, p.status as payment_status, p.amount, p.bank_name,
-               r.name as rest_name, r.address as rest_address, r.phone as rest_phone
+               COALESCE(r.name, 'La Estación Burger') as rest_name,
+               COALESCE(r.address, 'Cra 12 #10-34, Centro Neiva') as rest_address,
+               COALESCE(r.phone, '+57 312 458 9210') as rest_phone
         FROM `orders` o
         LEFT JOIN `payments` p ON o.id = p.order_id
         LEFT JOIN `restaurants` r ON o.restaurant_id = r.id
-        ORDER BY o.id DESC LIMIT 1
+        WHERE o.status IN ('recibido', 'preparando', 'en_camino')
+        ORDER BY o.id DESC
     ");
-    $activeOrders = $stmtLast->fetchAll();
+    $activeOrders = $stmtOrders->fetchAll();
+
+    // Si no hay pedidos en curso, traer el último para demostración
+    if (empty($activeOrders)) {
+        $stmtLast = $db->query("
+            SELECT o.*, p.payment_method, p.status as payment_status, p.amount, p.bank_name,
+                   COALESCE(r.name, 'La Estación Burger') as rest_name,
+                   COALESCE(r.address, 'Cra 12 #10-34, Centro Neiva') as rest_address,
+                   COALESCE(r.phone, '+57 312 458 9210') as rest_phone
+            FROM `orders` o
+            LEFT JOIN `payments` p ON o.id = p.order_id
+            LEFT JOIN `restaurants` r ON o.restaurant_id = r.id
+            ORDER BY o.id DESC LIMIT 1
+        ");
+        $activeOrders = $stmtLast->fetchAll();
+    }
+} catch (Exception $e) {
+    // Fallback a consulta simple sin join de restaurantes por compatibilidad
+    try {
+        $stmtFallback = $db->query("
+            SELECT o.*, p.payment_method, p.status as payment_status, p.amount, p.bank_name,
+                   'La Estación Burger' as rest_name,
+                   'Cra 12 #10-34, Centro Neiva' as rest_address,
+                   '+57 312 458 9210' as rest_phone
+            FROM `orders` o
+            LEFT JOIN `payments` p ON o.id = p.order_id
+            ORDER BY o.id DESC LIMIT 1
+        ");
+        $activeOrders = $stmtFallback->fetchAll();
+    } catch (Exception $e2) {
+        $activeOrders = [];
+    }
 }
 ?>
 <!DOCTYPE html>
