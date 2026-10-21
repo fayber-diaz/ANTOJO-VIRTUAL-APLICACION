@@ -186,15 +186,15 @@ $db = getDB();
     <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.35rem;">
       <button class="cat-chip active" id="btn-mood-all" onclick="App.filterBySiteType('all')" style="font-weight: 800; cursor: pointer;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">auto_awesome</span>
-        🌟 Todo el Menú (10 Sitios)
+        🌟 Todo el Menú (28 Sitios)
       </button>
       <button class="cat-chip" id="btn-mood-salado" onclick="App.filterBySiteType('comidas_rapidas')" style="font-weight: 800; cursor: pointer;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">lunch_dining</span>
-        🍔 Comidas Rápidas & Parrillas (6)
+        🍔 Comidas Rápidas & Parrillas (14)
       </button>
       <button class="cat-chip" id="btn-mood-dulce" onclick="App.filterBySiteType('dulces')" style="font-weight: 800; cursor: pointer; background: #fff5f5; border-color: #fca5a5;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">icecream</span>
-        🍨 Dulces, Helados & Postres (4)
+        🍨 Dulces, Helados & Postres (14)
       </button>
     </div>
 
