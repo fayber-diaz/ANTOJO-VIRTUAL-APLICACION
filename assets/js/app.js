@@ -86,7 +86,8 @@ const App = {
     restaurants: [],
     dishes: [],
     categories: [],
-    customizerOptions: { terminos: [], panes: [], toppings: [], salsas: [] },
+    selectedSiteType: 'all',
+    customizerOptions: { terminos: [], panes: [], toppings: [], salsas: [], sabores: [], bases_dulces: [], siropes: [], toppings_dulces: [], dulzura: [] },
     selectedCategory: 'all',
     selectedComuna: 'Comuna 4 - Centro',
     searchQuery: '',
@@ -336,23 +337,23 @@ const App = {
         <div class="dish-image-wrapper">
           <img src="${d.image}" alt="${d.name}" class="dish-img" loading="lazy">
           ${d.is_featured ? `
-            <div class="dish-badge" style="background: rgba(220, 38, 38, 0.9); color: white;">
-              <span class="material-symbols-outlined" style="font-size: 15px; color: #fea619;">local_fire_department</span>
-              Especialidad al Carbón
+            <div class="dish-badge" style="background: ${d.dish_type === 'dulce' ? 'linear-gradient(135deg, #e11d48, #be123c)' : 'rgba(220, 38, 38, 0.9)'}; color: white;">
+              <span class="material-symbols-outlined" style="font-size: 15px; color: #fea619;">${d.dish_type === 'dulce' ? 'icecream' : 'local_fire_department'}</span>
+              ${d.dish_type === 'dulce' ? 'Antojo Dulce' : 'Especialidad al Carbón'}
             </div>
           ` : ''}
         </div>
         <div class="dish-content">
-          <span class="dish-rest-name">${d.restaurant_name}</span>
+          <span class="dish-rest-name" style="${d.dish_type === 'dulce' ? 'color: #be123c;' : ''}">${d.restaurant_name}</span>
           <h3 class="dish-title">${d.name}</h3>
           <p class="dish-desc">${d.description}</p>
           <div class="dish-tags">
-            ${(d.tags_array || []).map(t => `<span class="dish-tag-item">${t}</span>`).join('')}
+            ${(d.tags_array || []).map(t => `<span class="dish-tag-item" style="${d.dish_type === 'dulce' ? 'background: #fff1f2; color: #be123c;' : ''}">${t}</span>`).join('')}
           </div>
           <div class="dish-footer">
             <span class="dish-price">${d.price_formatted}</span>
-            <button class="btn-customize" onclick="App.openCustomizer(${d.id})">
-              <span class="material-symbols-outlined" style="font-size: 18px;">tune</span>
+            <button class="btn-customize" onclick="App.openCustomizer(${d.id})" style="${d.dish_type === 'dulce' ? 'background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; box-shadow: 3px 3px 10px rgba(225, 29, 72, 0.35);' : ''}">
+              <span class="material-symbols-outlined" style="font-size: 18px;">${d.dish_type === 'dulce' ? 'cake' : 'tune'}</span>
               Personalizar
             </button>
           </div>
@@ -369,17 +370,35 @@ const App = {
     this.state.activeDishForCustomizer = dish;
     this.state.isCustomizerOpen = true;
 
-    // Valores por defecto
-    const defaultTermino = this.state.customizerOptions.terminos.find(t => t.is_default)?.name || 'Tres Cuartos - 3/4 (Punto ideal de la casa)';
-    const defaultBread = this.state.customizerOptions.panes.find(p => p.is_default)?.name || 'Pan Brioche Dorado Tradicional';
+    const isSweet = dish.dish_type === 'dulce' || ['helados', 'postres', 'waffles', 'malteadas'].includes(dish.category);
 
-    this.state.customizerSelection = {
-      termino: defaultTermino,
-      bread: defaultBread,
-      toppings: {},
-      sauces: ['Tártara Especial de la Abuela', 'BBQ Artesanal con Guayaba Huilense'],
-      notes: ''
-    };
+    if (isSweet) {
+      const defaultSabor = (this.state.customizerOptions.sabores || []).find(s => s.is_default)?.name || 'Vainilla Francesa Bourbon (Artesanal)';
+      const defaultBase = (this.state.customizerOptions.bases_dulces || []).find(b => b.is_default)?.name || 'Vaso Ecológico Especial para Postre';
+      const defaultDulzura = (this.state.customizerOptions.dulzura || []).find(d => d.is_default)?.name || 'Dulzura Tradicional de la Casa (Equilibrado Perfecto)';
+
+      this.state.customizerSelection = {
+        isSweet: true,
+        sabor: defaultSabor,
+        base: defaultBase,
+        siropes: ['Nutella Original Caliente y Fundida', 'Arequipe Artesanal Tibio de la Casa'],
+        toppings: {},
+        dulzura: defaultDulzura,
+        notes: ''
+      };
+    } else {
+      const defaultTermino = (this.state.customizerOptions.terminos || []).find(t => t.is_default)?.name || 'Tres Cuartos - 3/4 (Punto ideal de la casa)';
+      const defaultBread = (this.state.customizerOptions.panes || []).find(p => p.is_default)?.name || 'Pan Brioche Dorado Tradicional';
+
+      this.state.customizerSelection = {
+        isSweet: false,
+        termino: defaultTermino,
+        bread: defaultBread,
+        toppings: {},
+        sauces: ['Tártara Especial de la Abuela', 'BBQ Artesanal con Guayaba Huilense'],
+        notes: ''
+      };
+    }
 
     this.renderCustomizerModal();
     document.getElementById('customizer-modal').classList.add('open');
@@ -399,76 +418,286 @@ const App = {
     document.getElementById('modal-dish-title').textContent = dish.name;
     document.getElementById('modal-dish-rest').textContent = dish.restaurant_name;
 
-    // Renderizar Términos
-    const terminosContainer = document.getElementById('modal-terminos-list');
-    terminosContainer.innerHTML = this.state.customizerOptions.terminos.map(t => `
-      <div class="option-row ${this.state.customizerSelection.termino === t.name ? 'selected' : ''}" 
-           onclick="App.selectTermino('${t.name}')">
-        <div class="option-left">
-          <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.termino === t.name ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
-            ${this.state.customizerSelection.termino === t.name ? 'radio_button_checked' : 'radio_button_unchecked'}
-          </span>
-          <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${t.name}</span>
-        </div>
-        <span class="option-price">${t.price_formatted}</span>
-      </div>
-    `).join('');
+    const modalBody = document.getElementById('customizer-modal-body');
+    if (!modalBody) return;
 
-    // Renderizar Panes
-    const panesContainer = document.getElementById('modal-panes-list');
-    panesContainer.innerHTML = this.state.customizerOptions.panes.map(p => `
-      <div class="option-row ${this.state.customizerSelection.bread === p.name ? 'selected' : ''}" 
-           onclick="App.selectBread('${p.name}')">
-        <div class="option-left">
-          <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.bread === p.name ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
-            ${this.state.customizerSelection.bread === p.name ? 'radio_button_checked' : 'radio_button_unchecked'}
-          </span>
-          <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${p.name}</span>
-        </div>
-        <span class="option-price">${p.price_formatted}</span>
-      </div>
-    `).join('');
+    const isSweet = this.state.customizerSelection.isSweet;
 
-    // Renderizar Toppings
-    const toppingsContainer = document.getElementById('modal-toppings-list');
-    toppingsContainer.innerHTML = this.state.customizerOptions.toppings.map(top => {
-      const currentCount = this.state.customizerSelection.toppings[top.name]?.count || 0;
-      return `
-        <div class="option-row ${currentCount > 0 ? 'selected' : ''}">
-          <div class="option-left">
-            <span class="material-symbols-outlined" style="color: #fea619; font-size: 22px;">check_circle</span>
-            <div>
-              <div style="font-weight: 800; font-size: 0.9rem; color: var(--color-on-surface);">${top.name}</div>
-              <div style="font-size: 0.8rem; color: #dc2626; font-weight: 700;">${top.price_formatted}</div>
-            </div>
+    if (isSweet) {
+      modalBody.innerHTML = `
+        <!-- Sección 1: Sabor de Helado / Relleno Dulce -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>🍨 1. Sabor de Gelato o Relleno Artesanal</span>
+            <span style="font-size: 0.75rem; color: #e11d48; font-weight: 800;">Obligatorio</span>
           </div>
-          <div class="counter-box">
-            <button class="counter-btn" onclick="App.adjustToppingCount('${top.name}', ${top.price}, -1)">-</button>
-            <span class="counter-value">${currentCount}</span>
-            <button class="counter-btn" onclick="App.adjustToppingCount('${top.name}', ${top.price}, 1)">+</button>
+          <div class="modal-section-sub">Elaborado a diario con frutas frescas y cacao premium</div>
+          <div id="modal-sabores-list">
+            ${(this.state.customizerOptions.sabores || []).map(s => `
+              <div class="option-row ${this.state.customizerSelection.sabor === s.name ? 'selected' : ''}" 
+                   onclick="App.selectSweetSabor('${s.name}')">
+                <div class="option-left">
+                  <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.sabor === s.name ? '#e11d48' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                    ${this.state.customizerSelection.sabor === s.name ? 'radio_button_checked' : 'radio_button_unchecked'}
+                  </span>
+                  <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${s.name}</span>
+                </div>
+                <span class="option-price">${s.price_formatted}</span>
+              </div>
+            `).join('')}
           </div>
+        </div>
+
+        <!-- Sección 2: Base de Presentación o Masa -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>🧇 2. Base de Presentación o Tipo de Masa</span>
+            <span style="font-size: 0.75rem; color: #e11d48; font-weight: 800;">Obligatorio</span>
+          </div>
+          <div class="modal-section-sub">Horneado fresco y crocante para tu postre</div>
+          <div id="modal-bases-list">
+            ${(this.state.customizerOptions.bases_dulces || []).map(b => `
+              <div class="option-row ${this.state.customizerSelection.base === b.name ? 'selected' : ''}" 
+                   onclick="App.selectSweetBase('${b.name}')">
+                <div class="option-left">
+                  <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.base === b.name ? '#e11d48' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                    ${this.state.customizerSelection.base === b.name ? 'radio_button_checked' : 'radio_button_unchecked'}
+                  </span>
+                  <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${b.name}</span>
+                </div>
+                <span class="option-price">${b.price_formatted}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 3: Siropes & Salsas Dulces Tibias -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>🍫 3. Siropes & Salsas Dulces Calientes</span>
+            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
+          </div>
+          <div class="modal-section-sub">Elige las salsas que bañarán tu postre</div>
+          <div id="modal-siropes-list">
+            ${(this.state.customizerOptions.siropes || []).map(sir => {
+              const isChecked = this.state.customizerSelection.siropes.includes(sir.name);
+              return `
+                <div class="option-row ${isChecked ? 'selected' : ''}" onclick="App.toggleSweetSirope('${sir.name}')">
+                  <div class="option-left">
+                    <span class="material-symbols-outlined" style="color: ${isChecked ? '#e11d48' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                      ${isChecked ? 'check_box' : 'check_box_outline_blank'}
+                    </span>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${sir.name}</span>
+                  </div>
+                  <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 4: Toppings Dulces Crujientes & Frutas -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>🍓 4. Toppings Crujientes, Frutas & Galletas</span>
+            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Opcionales</span>
+          </div>
+          <div class="modal-section-sub">Galleta Oreo, almendras tostadas, fresas picadas o chantilly</div>
+          <div id="modal-toppings-list">
+            ${(this.state.customizerOptions.toppings_dulces || []).map(top => {
+              const currentCount = this.state.customizerSelection.toppings[top.name]?.count || 0;
+              return `
+                <div class="option-row ${currentCount > 0 ? 'selected' : ''}">
+                  <div class="option-left">
+                    <span class="material-symbols-outlined" style="color: #fea619; font-size: 22px;">star</span>
+                    <div>
+                      <div style="font-weight: 800; font-size: 0.9rem; color: var(--color-on-surface);">${top.name}</div>
+                      <div style="font-size: 0.8rem; color: #dc2626; font-weight: 700;">${top.price_formatted}</div>
+                    </div>
+                  </div>
+                  <div class="counter-box">
+                    <button class="counter-btn" onclick="App.adjustToppingCount('${top.name}', ${top.price}, -1)">-</button>
+                    <span class="counter-value">${currentCount}</span>
+                    <button class="counter-btn" onclick="App.adjustToppingCount('${top.name}', ${top.price}, 1)">+</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 5: Nivel de Dulzura -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>✨ 5. Nivel de Dulzura Deseado</span>
+            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Opcional</span>
+          </div>
+          <div class="modal-section-sub">Ajusta el nivel de dulce a tu gusto</div>
+          <div id="modal-dulzura-list">
+            ${(this.state.customizerOptions.dulzura || []).map(d => `
+              <div class="option-row ${this.state.customizerSelection.dulzura === d.name ? 'selected' : ''}" 
+                   onclick="App.selectSweetDulzura('${d.name}')">
+                <div class="option-left">
+                  <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.dulzura === d.name ? '#e11d48' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                    ${this.state.customizerSelection.dulzura === d.name ? 'radio_button_checked' : 'radio_button_unchecked'}
+                  </span>
+                  <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${d.name}</span>
+                </div>
+                <span class="option-price">${d.price_formatted}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 6: Notas Especiales -->
+        <div class="modal-section" style="border-bottom: none;">
+          <div class="modal-section-title">
+            <span>📝 6. Instrucciones para la Repostería / Heladería</span>
+          </div>
+          <div class="modal-section-sub">¿Salsas por separado? ¿Mensaje especial? Escríbelo aquí:</div>
+          <textarea id="modal-notes-input" class="form-textarea" rows="2" placeholder="Ej: Salsa caliente en envase separado por favor...">${this.state.customizerSelection.notes || ''}</textarea>
         </div>
       `;
-    }).join('');
-
-    // Renderizar Salsas
-    const salsasContainer = document.getElementById('modal-salsas-list');
-    salsasContainer.innerHTML = this.state.customizerOptions.salsas.map(s => {
-      const isChecked = this.state.customizerSelection.sauces.includes(s.name);
-      return `
-        <div class="option-row ${isChecked ? 'selected' : ''}" onclick="App.toggleSauce('${s.name}')">
-          <div class="option-left">
-            <span class="material-symbols-outlined" style="color: ${isChecked ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
-              ${isChecked ? 'check_box' : 'check_box_outline_blank'}
-            </span>
-            <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${s.name}</span>
+    } else {
+      modalBody.innerHTML = `
+        <!-- Sección 1: Término de la Carne -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>1. Término de la Carne al Carbón</span>
+            <span style="font-size: 0.75rem; color: #dc2626; font-weight: 800;">Obligatorio</span>
           </div>
-          <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
+          <div class="modal-section-sub">Selecciona la jugosidad deseada en la parrilla</div>
+          <div id="modal-terminos-list">
+            ${(this.state.customizerOptions.terminos || []).map(t => `
+              <div class="option-row ${this.state.customizerSelection.termino === t.name ? 'selected' : ''}" 
+                   onclick="App.selectTermino('${t.name}')">
+                <div class="option-left">
+                  <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.termino === t.name ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                    ${this.state.customizerSelection.termino === t.name ? 'radio_button_checked' : 'radio_button_unchecked'}
+                  </span>
+                  <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${t.name}</span>
+                </div>
+                <span class="option-price">${t.price_formatted}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 2: Tipo de Pan Artesanal -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>2. Selección de Pan Artesanal</span>
+            <span style="font-size: 0.75rem; color: #dc2626; font-weight: 800;">Obligatorio</span>
+          </div>
+          <div class="modal-section-sub">Horneado fresco a diario en panadería local</div>
+          <div id="modal-panes-list">
+            ${(this.state.customizerOptions.panes || []).map(p => `
+              <div class="option-row ${this.state.customizerSelection.bread === p.name ? 'selected' : ''}" 
+                   onclick="App.selectBread('${p.name}')">
+                <div class="option-left">
+                  <span class="material-symbols-outlined" style="color: ${this.state.customizerSelection.bread === p.name ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                    ${this.state.customizerSelection.bread === p.name ? 'radio_button_checked' : 'radio_button_unchecked'}
+                  </span>
+                  <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${p.name}</span>
+                </div>
+                <span class="option-price">${p.price_formatted}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 3: Toppings Extras con Contador -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>3. Toppings & Adiciones Especiales</span>
+            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Opcionales</span>
+          </div>
+          <div class="modal-section-sub">Agrega tocineta, quesos asados o doble carne</div>
+          <div id="modal-toppings-list">
+            ${(this.state.customizerOptions.toppings || []).map(top => {
+              const currentCount = this.state.customizerSelection.toppings[top.name]?.count || 0;
+              return `
+                <div class="option-row ${currentCount > 0 ? 'selected' : ''}">
+                  <div class="option-left">
+                    <span class="material-symbols-outlined" style="color: #fea619; font-size: 22px;">check_circle</span>
+                    <div>
+                      <div style="font-weight: 800; font-size: 0.9rem; color: var(--color-on-surface);">${top.name}</div>
+                      <div style="font-size: 0.8rem; color: #dc2626; font-weight: 700;">${top.price_formatted}</div>
+                    </div>
+                  </div>
+                  <div class="counter-box">
+                    <button class="counter-btn" onclick="App.adjustToppingCount('${top.name}', ${top.price}, -1)">-</button>
+                    <span class="counter-value">${currentCount}</span>
+                    <button class="counter-btn" onclick="App.adjustToppingCount('${top.name}', ${top.price}, 1)">+</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 4: Salsas Colombianas de la Casa -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <span>4. Salsas Artesanales de la Casa</span>
+            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
+          </div>
+          <div class="modal-section-sub">Elige las salsas que acompañarán tu orden</div>
+          <div id="modal-salsas-list">
+            ${(this.state.customizerOptions.salsas || []).map(s => {
+              const isChecked = this.state.customizerSelection.sauces.includes(s.name);
+              return `
+                <div class="option-row ${isChecked ? 'selected' : ''}" onclick="App.toggleSauce('${s.name}')">
+                  <div class="option-left">
+                    <span class="material-symbols-outlined" style="color: ${isChecked ? '#dc2626' : 'var(--color-on-surface-variant)'}; font-size: 22px;">
+                      ${isChecked ? 'check_box' : 'check_box_outline_blank'}
+                    </span>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--color-on-surface);">${s.name}</span>
+                  </div>
+                  <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Sección 5: Notas Especiales -->
+        <div class="modal-section" style="border-bottom: none;">
+          <div class="modal-section-title">
+            <span>5. Notas para el Maestro Parrillero</span>
+          </div>
+          <div class="modal-section-sub">¿Sin cebolla? ¿Salsa aparte? Escríbelo aquí:</div>
+          <textarea id="modal-notes-input" class="form-textarea" rows="2" placeholder="Ej: Sin cebolla, salsas en recipientes separados por favor...">${this.state.customizerSelection.notes || ''}</textarea>
         </div>
       `;
-    }).join('');
+    }
 
     this.calculateModalTotal();
+  },
+
+  selectSweetSabor(name) {
+    this.state.customizerSelection.sabor = name;
+    this.renderCustomizerModal();
+  },
+
+  selectSweetBase(name) {
+    this.state.customizerSelection.base = name;
+    this.renderCustomizerModal();
+  },
+
+  toggleSweetSirope(name) {
+    const idx = this.state.customizerSelection.siropes.indexOf(name);
+    if (idx > -1) {
+      this.state.customizerSelection.siropes.splice(idx, 1);
+    } else {
+      this.state.customizerSelection.siropes.push(name);
+    }
+    this.renderCustomizerModal();
+  },
+
+  selectSweetDulzura(name) {
+    this.state.customizerSelection.dulzura = name;
+    this.renderCustomizerModal();
   },
 
   selectTermino(name) {
@@ -508,14 +737,28 @@ const App = {
 
     let total = dish.price;
 
-    const selectedBreadObj = this.state.customizerOptions.panes.find(p => p.name === this.state.customizerSelection.bread);
-    if (selectedBreadObj) {
-      total += selectedBreadObj.price;
-    }
-
-    for (const key in this.state.customizerSelection.toppings) {
-      const top = this.state.customizerSelection.toppings[key];
-      total += (top.price * top.count);
+    if (this.state.customizerSelection.isSweet) {
+      const selectedBaseObj = (this.state.customizerOptions.bases_dulces || []).find(b => b.name === this.state.customizerSelection.base);
+      if (selectedBaseObj) {
+        total += (selectedBaseObj.price || 0);
+      }
+      const selectedSaborObj = (this.state.customizerOptions.sabores || []).find(s => s.name === this.state.customizerSelection.sabor);
+      if (selectedSaborObj) {
+        total += (selectedSaborObj.price || 0);
+      }
+      for (const key in this.state.customizerSelection.toppings) {
+        const top = this.state.customizerSelection.toppings[key];
+        total += (top.price * top.count);
+      }
+    } else {
+      const selectedBreadObj = (this.state.customizerOptions.panes || []).find(p => p.name === this.state.customizerSelection.bread);
+      if (selectedBreadObj) {
+        total += selectedBreadObj.price;
+      }
+      for (const key in this.state.customizerSelection.toppings) {
+        const top = this.state.customizerSelection.toppings[key];
+        total += (top.price * top.count);
+      }
     }
 
     const formatted = '$' + total.toLocaleString('es-CO');
@@ -535,16 +778,22 @@ const App = {
       toppingsArray.push({ name, price: t.price, count: t.count });
     }
 
+    const isSweet = this.state.customizerSelection.isSweet;
+
     const cartItem = {
       id: 'item-' + Date.now(),
       name: dish.name,
       restaurant: dish.restaurant_name,
       basePrice: dish.price,
       quantity: 1,
-      doneness: this.state.customizerSelection.termino,
-      bread: this.state.customizerSelection.bread,
+      isSweet: isSweet,
+      doneness: isSweet ? '' : this.state.customizerSelection.termino,
+      bread: isSweet ? '' : this.state.customizerSelection.bread,
+      sabor: isSweet ? this.state.customizerSelection.sabor : '',
+      base: isSweet ? this.state.customizerSelection.base : '',
       toppings: toppingsArray,
-      sauces: [...this.state.customizerSelection.sauces],
+      sauces: isSweet ? [...this.state.customizerSelection.siropes] : [...this.state.customizerSelection.sauces],
+      dulzura: isSweet ? this.state.customizerSelection.dulzura : '',
       notes: notes
     };
 
@@ -552,7 +801,7 @@ const App = {
     this.saveCartToStorage();
     this.renderCartBadge();
     this.closeCustomizer();
-    this.showToast(`¡${dish.name} agregada a tu orden!`);
+    this.showToast(`¡${dish.name} agregado a tu orden!`);
   },
 
   // Manejo del Carrito
@@ -629,19 +878,25 @@ const App = {
             </div>
             <span style="font-size: 0.8rem; font-weight: 800; color: #fea619; text-transform: uppercase;">${item.restaurant}</span>
 
-            ${item.doneness ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">🥩 <strong>Término:</strong> ${item.doneness}</div>` : ''}
-            ${item.bread ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant);">🍞 <strong>Pan:</strong> ${item.bread}</div>` : ''}
+            ${item.isSweet ? `
+              ${item.sabor ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">🍨 <strong>Sabor / Gelato:</strong> ${item.sabor}</div>` : ''}
+              ${item.base ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant);">🧇 <strong>Base / Masa:</strong> ${item.base}</div>` : ''}
+              ${item.dulzura ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant);">✨ <strong>Dulzura:</strong> ${item.dulzura}</div>` : ''}
+            ` : `
+              ${item.doneness ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant); margin-top: 0.25rem;">🥩 <strong>Término:</strong> ${item.doneness}</div>` : ''}
+              ${item.bread ? `<div style="font-size: 0.8rem; color: var(--color-on-surface-variant);">🍞 <strong>Pan:</strong> ${item.bread}</div>` : ''}
+            `}
 
             ${item.toppings && item.toppings.length > 0 ? `
               <div style="margin-top: 0.35rem; font-size: 0.8rem; color: var(--color-on-surface);">
-                <strong>Toppings extras:</strong>
+                <strong>${item.isSweet ? 'Toppings dulces:' : 'Toppings extras:'}</strong>
                 ${item.toppings.map(t => `<span class="dish-tag-item" style="margin-right:4px;">+ ${t.name} ($${(t.price).toLocaleString('es-CO')})</span>`).join('')}
               </div>
             ` : ''}
 
             ${item.sauces && item.sauces.length > 0 ? `
-              <div style="font-size: 0.8rem; color: #1a8340; margin-top: 0.25rem;">
-                <strong>Salsas:</strong> ${item.sauces.join(', ')}
+              <div style="font-size: 0.8rem; color: ${item.isSweet ? '#e11d48' : '#1a8340'}; margin-top: 0.25rem;">
+                <strong>${item.isSweet ? 'Siropes dulces:' : 'Salsas:'}</strong> ${item.sauces.join(', ')}
               </div>
             ` : ''}
 
@@ -1915,10 +2170,43 @@ const App = {
     }
   },
 
-  // Filtros
+  // Filtros de Tipo de Sitio (Salado vs Dulce)
+  filterBySiteType(type) {
+    this.state.selectedSiteType = type;
+    document.querySelectorAll('#btn-mood-all, #btn-mood-salado, #btn-mood-dulce').forEach(b => b.classList.remove('active'));
+    if (type === 'all') document.getElementById('btn-mood-all')?.classList.add('active');
+    if (type === 'comidas_rapidas') document.getElementById('btn-mood-salado')?.classList.add('active');
+    if (type === 'dulces') document.getElementById('btn-mood-dulce')?.classList.add('active');
+
+    if (type === 'dulces') {
+      this.state.selectedCategory = 'dulces';
+      document.querySelectorAll('#subcategories-slider .cat-chip').forEach(c => {
+        const cat = c.dataset.cat;
+        c.style.display = (c.classList.contains('sweet-cat') || cat === 'all') ? 'inline-flex' : 'none';
+        c.classList.toggle('active', cat === 'all');
+      });
+    } else if (type === 'comidas_rapidas') {
+      this.state.selectedCategory = 'comidas_rapidas';
+      document.querySelectorAll('#subcategories-slider .cat-chip').forEach(c => {
+        const cat = c.dataset.cat;
+        c.style.display = (!c.classList.contains('sweet-cat') || cat === 'all') ? 'inline-flex' : 'none';
+        c.classList.toggle('active', cat === 'all');
+      });
+    } else {
+      this.state.selectedCategory = 'all';
+      document.querySelectorAll('#subcategories-slider .cat-chip').forEach(c => {
+        c.style.display = 'inline-flex';
+        c.classList.toggle('active', cat === 'all');
+      });
+    }
+
+    this.fetchRestaurants();
+    this.fetchDishes();
+  },
+
   filterByCategory(catSlug) {
     this.state.selectedCategory = catSlug;
-    document.querySelectorAll('.cat-chip').forEach(c => {
+    document.querySelectorAll('#subcategories-slider .cat-chip').forEach(c => {
       c.classList.toggle('active', c.dataset.cat === catSlug);
     });
     this.fetchRestaurants();

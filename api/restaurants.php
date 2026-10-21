@@ -14,7 +14,11 @@ try {
     $query = "SELECT * FROM `restaurants` WHERE `is_open` = 1";
     $params = [];
 
-    if ($category !== 'all' && !empty($category)) {
+    if ($category === 'comidas_rapidas' || $category === 'salados') {
+        $query .= " AND `site_type` = 'comidas_rapidas'";
+    } elseif ($category === 'dulces' || $category === 'postres_all') {
+        $query .= " AND `site_type` = 'dulces'";
+    } elseif ($category !== 'all' && !empty($category)) {
         $query .= " AND `category` = :category";
         $params[':category'] = $category;
     }

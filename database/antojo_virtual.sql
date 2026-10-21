@@ -226,12 +226,16 @@ CREATE TABLE `categories` (
 
 INSERT INTO `categories` (`slug`, `name`, `icon`, `sort_order`) VALUES
 ('all',         'Todos los Antojos',        'restaurant',    1),
-('burgers',     'Hamburguesas al Carbón',   'lunch_dining',  2),
-('salchipapas', 'Salchipapas Monumentales', 'fastfood',      3),
-('arepas',      'Arepas & Patacones',       'bakery_dining', 4),
-('perros',      'Perros Calientes',         'kebab_dining',  5),
-('desgranados', 'Desgranados & Mazorca',    'grain',         6),
-('bebidas',     'Bebidas & Postres',        'local_drink',   7);
+('helados',     'Helados & Gelato',         'icecream',      2),
+('postres',     'Postres & Tortas',         'cake',          3),
+('waffles',     'Waffles & Crepes',         'cookie',        4),
+('malteadas',   'Monster Shakes',           'local_cafe',    5),
+('burgers',     'Hamburguesas al Carbón',   'lunch_dining',  6),
+('salchipapas', 'Salchipapas Monumentales', 'fastfood',      7),
+('arepas',      'Arepas & Patacones',       'bakery_dining', 8),
+('perros',      'Perros Calientes',         'kebab_dining',  9),
+('desgranados', 'Desgranados & Mazorca',    'grain',         10),
+('bebidas',     'Bebidas & Postres',        'local_drink',   11);
 
 -- ---------------------------------------------------------
 -- 9. Tabla: Repartidores Locales (Riders en Neiva)
@@ -277,19 +281,25 @@ CREATE TABLE `restaurants` (
   `star_price` INT NOT NULL,
   `star_tag` VARCHAR(50) DEFAULT 'Especialidad',
   `category` VARCHAR(50) NOT NULL,
+  `site_type` ENUM('comidas_rapidas', 'dulces', 'mixto') DEFAULT 'comidas_rapidas',
   `is_open` TINYINT(1) DEFAULT 1,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_rest_category` (`category`),
+  INDEX `idx_rest_site_type` (`site_type`),
   INDEX `idx_rest_rating` (`rating`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `restaurants` (`slug`, `name`, `address`, `comuna`, `phone`, `whatsapp`, `rating`, `reviews_count`, `delivery_time`, `delivery_fee`, `badge`, `badge_type`, `image`, `description`, `star_dish`, `star_price`, `star_tag`, `category`, `is_open`) VALUES
-('la-estacion-burger',       'La Estación Burger',        'Cra 12 #10-34, Centro',        'Comuna 4', '+57 314 289 9012', '573142899012', 4.9, 142, '25-35 min', 3500, 'Verificado Huila', 'verified',   'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80', 'Especialistas en cocción a la parrilla de carbón, salsas artesanales de la casa y pan brioche horneado a diario en Neiva.', 'Hamburguesa Monumental Huilense 200g', 24900, 'Listo en 20 min', 'burgers',     1),
-('salchipaperia-la-8va',     'Salchipapería La 8va',      'Calle 8 #14-20, Las Granjas',  'Comuna 2', '+57 311 502 8844', '573115028844', 4.8, 98,  '20-30 min', 3000, 'Más Vendido',     'bestseller', 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=600&auto=format&fit=crop&q=80', 'Porciones gigantescas con papas crujientes criollas y americanas, bañadas en tártara especial y queso costeño rallado al tope.', 'Súper Salchipapa Costeña-Opita', 22000, 'Para compartir', 'salchipapas', 1),
-('el-patacon-callejero',     'El Patacón Callejero',      'Av. Circunvalar #18-05',       'Comuna 3', '+57 320 914 3321', '573209143321', 4.9, 115, '25-35 min', 3500, 'Verificado Huila', 'verified',   'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80', 'Patacones crocantes pisados al instante con plátano verde del Huila, carnes desmechadas jugosas y salsas artesanales frescas.', 'Patacón Monumental con Todo', 19500, '100% Crocante',   'arepas',      1),
-('perros-grill-opita',       'Perros & Grill Opita',      'Cra 5 #24-10, Las Granjas',    'Comuna 2', '+57 318 642 9901', '573186429901', 4.7, 76,  '15-25 min', 2800, 'Súper Rápido',    'speed',      'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?w=600&auto=format&fit=crop&q=80', 'El auténtico perro caliente colombiano: salchicha suiza a la plancha, ripio crujiente, tocineta y huevos de codorniz con salsa de piña.', 'Perro Caliente Especial Opita', 16000, 'Combo disponible', 'perros',     1),
-('mazorcadas-del-magdalena', 'Mazorcadas del Magdalena',  'Av. 26 #38-12, Altico',        'Comuna 5', '+57 317 800 1122', '573178001122', 4.9, 88,  '25-35 min', 3200, 'Recomendado',     'verified',   'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', 'Maíz tierno desgranado a la mantequilla derretida, lomo de res salteado, pollo campesino y una capa generosa de queso fundido.', 'Desgranado Mixto Supremo al Carbón', 21500, 'Súper Quesudo', 'desgranados', 1),
-('arepas-don-huila',         'Arepas Don Huila',          'Cra 5 #21-15, Quirinal',       'Comuna 3', '+57 316 430 7799', '573164307799', 4.8, 104, '20-30 min', 3000, 'Tradición Neiva', 'bestseller', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80', 'Masa artesanal asada de maíz blanco rellena con generosa porción de carne deshebrada, pollo, chicharrón crocante y guacamole.', 'Arepa Rellena Trifásica Campesina', 17800, 'Maíz 100% Puro',  'arepas',      1);
+INSERT INTO `restaurants` (`slug`, `name`, `address`, `comuna`, `phone`, `whatsapp`, `rating`, `reviews_count`, `delivery_time`, `delivery_fee`, `badge`, `badge_type`, `image`, `description`, `star_dish`, `star_price`, `star_tag`, `category`, `site_type`, `is_open`) VALUES
+('la-estacion-burger',         'La Estación Burger',                   'Cra 12 #10-34, Centro',        'Comuna 4', '+57 314 289 9012', '573142899012', 4.9, 142, '25-35 min', 3500, 'Verificado Huila', 'verified',   'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80', 'Especialistas en cocción a la parrilla de carbón, salsas artesanales de la casa y pan brioche horneado a diario en Neiva.', 'Hamburguesa Monumental Huilense 200g', 24900, 'Listo en 20 min', 'burgers',     'comidas_rapidas', 1),
+('salchipaperia-la-8va',       'Salchipapería La 8va',                 'Calle 8 #14-20, Las Granjas',  'Comuna 2', '+57 311 502 8844', '573115028844', 4.8, 98,  '20-30 min', 3000, 'Más Vendido',     'bestseller', 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=600&auto=format&fit=crop&q=80', 'Porciones gigantescas con papas crujientes criollas y americanas, bañadas en tártara especial y queso costeño rallado al tope.', 'Súper Salchipapa Costeña-Opita', 22000, 'Para compartir', 'salchipapas', 'comidas_rapidas', 1),
+('el-patacon-callejero',       'El Patacón Callejero',                 'Av. Circunvalar #18-05',       'Comuna 3', '+57 320 914 3321', '573209143321', 4.9, 115, '25-35 min', 3500, 'Verificado Huila', 'verified',   'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80', 'Patacones crocantes pisados al instante con plátano verde del Huila, carnes desmechadas jugosas y salsas artesanales frescas.', 'Patacón Monumental con Todo', 19500, '100% Crocante',   'arepas',      'comidas_rapidas', 1),
+('perros-grill-opita',         'Perros & Grill Opita',                 'Cra 5 #24-10, Las Granjas',    'Comuna 2', '+57 318 642 9901', '573186429901', 4.7, 76,  '15-25 min', 2800, 'Súper Rápido',    'speed',      'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?w=600&auto=format&fit=crop&q=80', 'El auténtico perro caliente colombiano: salchicha suiza a la plancha, ripio crujiente, tocineta y huevos de codorniz con salsa de piña.', 'Perro Caliente Especial Opita', 16000, 'Combo disponible', 'perros',     'comidas_rapidas', 1),
+('mazorcadas-del-magdalena',   'Mazorcadas del Magdalena',             'Av. 26 #38-12, Altico',        'Comuna 5', '+57 317 800 1122', '573178001122', 4.9, 88,  '25-35 min', 3200, 'Recomendado',     'verified',   'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', 'Maíz tierno desgranado a la mantequilla derretida, lomo de res salteado, pollo campesino y una capa generosa de queso fundido.', 'Desgranado Mixto Supremo al Carbón', 21500, 'Súper Quesudo', 'desgranados', 'comidas_rapidas', 1),
+('arepas-don-huila',           'Arepas Don Huila',                     'Cra 5 #21-15, Quirinal',       'Comuna 3', '+57 316 430 7799', '573164307799', 4.8, 104, '20-30 min', 3000, 'Tradición Neiva', 'bestseller', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80', 'Masa artesanal asada de maíz blanco rellena con generosa porción de carne deshebrada, pollo, chicharrón crocante y guacamole.', 'Arepa Rellena Trifásica Campesina', 17800, 'Maíz 100% Puro',  'arepas',      'comidas_rapidas', 1),
+('dolce-gelato-neiva',         'Dolce Gelato • Heladería Artesanal',   'Cra 6 #14-22, La Toma',        'Comuna 4', '+57 315 789 4433', '573157894433', 4.9, 185, '15-25 min', 3000, 'Gelato Italiano',  'bestseller', 'https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?w=600&auto=format&fit=crop&q=80', 'Auténtico gelato italiano artesanal elaborado a diario con frutas frescas del Huila, chocolate belga al 70% y conos horneados al momento.', 'Copa Suprema Dolce Gelato (3 Bolas)', 18500, 'Más Pedido', 'helados', 'dulces', 1),
+('tentacion-dulce-reposteria', 'Tentación Dulce • Repostería & Café',  'Cl 18 #7-45, Barrio Ipanema',  'Comuna 7', '+57 318 642 1199', '573186421199', 4.9, 210, '20-30 min', 3500, 'Repostería Fina', 'verified',   'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&auto=format&fit=crop&q=80', 'Cheesecakes estilo New York, tortas húmedas de chocolate belga, brownies melcochudos y postres con frutos de la región huilense.', 'Cheesecake Artesanal Frutos Rojos', 16900, 'Chef Pastelero', 'postres', 'dulces', 1),
+('waffle-crepe-station',       'Waffle & Crepe Station Neiva',         'Av. Buganviles Cra 39 #19-15', 'Comuna 5', '+57 312 884 9010', '573128849010', 4.8, 142, '20-35 min', 3500, 'Waffles Calientes','speed',      'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=600&auto=format&fit=crop&q=80', 'Waffles burbuja crocantes, crepes dulces parisinos bañados en Nutella caliente, frutas frescas recién cortadas y bolas de helado artesanal.', 'Bubble Waffle Nutella & Helado', 21900, 'Favorito Jóvenes', 'waffles', 'dulces', 1),
+('monster-shakes-neiva',       'Monster Shakes & Bebidas Dulces',      'Calle 8 #12-40, Altico',       'Comuna 3', '+57 311 502 8377', '573115028377', 4.8, 98,  '15-25 min', 3000, 'Malteadas Monstruo','verified',   'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600&auto=format&fit=crop&q=80', 'Malteadas monstruo super cargadas con borde escarchado en Nutella y maní, galleta Oreo gigante, barquillos, crema chantilly y lluvia de chocolates.', 'Monster Shake Choco-Oreo Suprema', 17500, 'Sensación Instagram', 'malteadas', 'dulces', 1);
 
 -- ---------------------------------------------------------
 -- 11. Tabla: Platos y Menú de Restaurantes
@@ -303,6 +313,7 @@ CREATE TABLE `menu_items` (
   `image` VARCHAR(255) NOT NULL,
   `tags` VARCHAR(200) DEFAULT '',
   `category` VARCHAR(50) NOT NULL,
+  `dish_type` ENUM('salado', 'dulce') DEFAULT 'salado',
   `is_featured` TINYINT(1) DEFAULT 0,
   `is_popular` TINYINT(1) DEFAULT 0,
   `is_available` TINYINT(1) DEFAULT 1,
@@ -310,31 +321,47 @@ CREATE TABLE `menu_items` (
   FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants`(`id`) ON DELETE CASCADE,
   INDEX `idx_menu_restaurant` (`restaurant_id`),
   INDEX `idx_menu_category`   (`category`),
+  INDEX `idx_menu_dish_type`  (`dish_type`),
   INDEX `idx_menu_featured`   (`is_featured`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `menu_items` (`restaurant_id`, `name`, `price`, `description`, `image`, `tags`, `category`, `is_featured`, `is_popular`) VALUES
-(1, 'Hamburguesa Monumental Huilense 200g', 24900, 'Carne de res seleccionada 200g a la parrilla de carbón, queso campesino asado de Algeciras, cebolla caramelizada en panela huilense, tocineta ahumada crujiente y salsa tártara artesanal.', 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', 'Res 200g, Queso Algeciras, Pan Brioche', 'burgers', 1, 1),
-(1, 'Hamburguesa Doble Smash Criolla', 28500, 'Doble disco de 110g de carne angus aplastada con costra crocante, triple queso cheddar fundido, pepinillos encurtidos y mayonesa de ajo asado.', 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80', 'Doble Carne, Queso Cheddar, Smash', 'burgers', 1, 0),
-(1, 'Papas Rústicas Romero & Paprika', 7500, 'Papas naturales en cascos cortadas a mano, sazonadas con romero fresco, sal marina y paprika ahumada.', 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600&auto=format&fit=crop&q=80', 'Artesanales, Romero, Cascos', 'burgers', 0, 1),
+INSERT INTO `menu_items` (`restaurant_id`, `name`, `price`, `description`, `image`, `tags`, `category`, `dish_type`, `is_featured`, `is_popular`) VALUES
+(1, 'Hamburguesa Monumental Huilense 200g', 24900, 'Carne de res seleccionada 200g a la parrilla de carbón, queso campesino asado de Algeciras, cebolla caramelizada en panela huilense, tocineta ahumada crujiente y salsa tártara artesanal.', 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80', 'Res 200g, Queso Algeciras, Pan Brioche', 'burgers', 'salado', 1, 1),
+(1, 'Hamburguesa Doble Smash Criolla', 28500, 'Doble disco de 110g de carne angus aplastada con costra crocante, triple queso cheddar fundido, pepinillos encurtidos y mayonesa de ajo asado.', 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80', 'Doble Carne, Queso Cheddar, Smash', 'burgers', 'salado', 1, 0),
+(1, 'Papas Rústicas Romero & Paprika', 7500, 'Papas naturales en cascos cortadas a mano, sazonadas con romero fresco, sal marina y paprika ahumada.', 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600&auto=format&fit=crop&q=80', 'Artesanales, Romero, Cascos', 'burgers', 'salado', 0, 1),
 
-(2, 'Súper Salchipapa Costeña-Opita', 22000, 'Base abundante de papas a la francesa y criollitas, salchicha manguera doradita, lomo picado, tocineta, queso costeño rallado en cascada y salsa rosada de la abuela.', 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=600&auto=format&fit=crop&q=80', 'Para compartir, Queso Costeño, Tocineta', 'salchipapas', 1, 1),
-(2, 'Salchipapa Salvaje 4 Carnes', 32000, 'Papas rústicas con chorizo santarrosano, lomo de res, pollo a la plancha, butifarra, ripio de papa y maíz dulce desgranado con doble queso fundido.', 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=600&auto=format&fit=crop&q=80', '4 Carnes, Familiar, Doble Queso', 'salchipapas', 1, 0),
+(2, 'Súper Salchipapa Costeña-Opita', 22000, 'Base abundante de papas a la francesa y criollitas, salchicha manguera doradita, lomo picado, tocineta, queso costeño rallado en cascada y salsa rosada de la abuela.', 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=600&auto=format&fit=crop&q=80', 'Para compartir, Queso Costeño, Tocineta', 'salchipapas', 'salado', 1, 1),
+(2, 'Salchipapa Salvaje 4 Carnes', 32000, 'Papas rústicas con chorizo santarrosano, lomo de res, pollo a la plancha, butifarra, ripio de papa y maíz dulce desgranado con doble queso fundido.', 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=600&auto=format&fit=crop&q=80', '4 Carnes, Familiar, Doble Queso', 'salchipapas', 'salado', 1, 0),
 
-(3, 'Patacón Monumental con Todo', 19500, 'Plátano verde gigante prensado y frito al instante bien tostado, con base de guacamole campesino, pollo desmechado, carne en tiras, hogao caliente y queso rallado.', 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80', '100% Crocante, Plátano Verde, Hogao', 'arepas', 1, 1),
+(3, 'Patacón Monumental con Todo', 19500, 'Plátano verde gigante prensado y frito al instante bien tostado, con base de guacamole campesino, pollo desmechado, carne en tiras, hogao caliente y queso rallado.', 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80', '100% Crocante, Plátano Verde, Hogao', 'arepas', 'salado', 1, 1),
 
-(4, 'Perro Caliente Especial Opita', 16000, 'Salchicha suiza premium sellada a la plancha, tocineta caramelizada, ripio crujiente casero, tres huevos de codorniz, salsa tártara y piña calada dulce.', 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?w=600&auto=format&fit=crop&q=80', 'Salchicha Suiza, Huevos Codorniz, Piña Calada', 'perros', 1, 1),
+(4, 'Perro Caliente Especial Opita', 16000, 'Salchicha suiza premium sellada a la plancha, tocineta caramelizada, ripio crujiente casero, tres huevos de codorniz, salsa tártara y piña calada dulce.', 'https://images.unsplash.com/photo-1619740455993-9e612b1af08a?w=600&auto=format&fit=crop&q=80', 'Salchicha Suiza, Huevos Codorniz, Piña Calada', 'perros', 'salado', 1, 1),
 
-(5, 'Desgranado Mixto Supremo al Carbón', 21500, 'Maíz tierno cocido y salteado a la mantequilla, tiernas tiras de lomo de res, pechuga de pollo marinada, fosforitos de papa criolla y manto fundido de mozzarella.', 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', 'Maíz Tierno, Pollo & Lomo, Queso Fundido', 'desgranados', 1, 1),
+(5, 'Desgranado Mixto Supremo al Carbón', 21500, 'Maíz tierno cocido y salteado a la mantequilla, tiernas tiras de lomo de res, pechuga de pollo marinada, fosforitos de papa criolla y manto fundido de mozzarella.', 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&auto=format&fit=crop&q=80', 'Maíz Tierno, Pollo & Lomo, Queso Fundido', 'desgranados', 'salado', 1, 1),
 
-(6, 'Arepa Rellena Trifásica Campesina', 17800, 'Masa 100% maíz peto blanco huilense asada en parrilla, rellena al tope de chicharrón carnudo bien tostado, carne deshebrada, pollo mechado y guacamole.', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80', 'Maíz 100%, Chicharrón, Guacamole', 'arepas', 1, 1);
+(6, 'Arepa Rellena Trifásica Campesina', 17800, 'Masa 100% maíz peto blanco huilense asada en parrilla, rellena al tope de chicharrón carnudo bien tostado, carne deshebrada, pollo mechado y guacamole.', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80', 'Maíz 100%, Chicharrón, Guacamole', 'arepas', 'salado', 1, 1),
+
+(7, 'Copa Suprema Dolce Gelato (3 Bolas)', 18500, 'Tres generosas bolas de helado artesanal a tu elección, con base de canasta crocante o vaso, bañado en salsa tibia y toppings abundantes.', 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&auto=format&fit=crop&q=80', 'Gelato Artesanal, 3 Bolas, Frutas del Huila, Gourmet', 'helados', 'dulce', 1, 1),
+(7, 'Cono Waffle Doble Sabor Premium', 12000, 'Dos bolas de gelato italiano en cono artesanal horneado con esencia de vainilla y borde cubierto de chocolate o arequipe.', 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=600&auto=format&fit=crop&q=80', 'Cono Waffle Crocante, 2 Bolas, Doble Sabor', 'helados', 'dulce', 0, 1),
+(7, 'Banana Split Especial San Agustín', 20500, 'Tradicional y monumental banana split con 3 sabores de helado, banano fresco, crema chantilly, fresas y cereza marrasquino.', 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', 'Banana Split, 3 Sabores, Chantilly, Cerezas', 'helados', 'dulce', 1, 0),
+
+(8, 'Cheesecake Artesanal de Frutos Rojos Huilenses', 16900, 'Cremoso cheesecake horneado sobre base crocante de galleta mantequilla, cubierto con coulis artesanal de moras y fresas del Huila.', 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&auto=format&fit=crop&q=80', 'Cheesecake, Frutos Rojos, Coulis Artesanal, Más Vendido', 'postres', 'dulce', 1, 1),
+(8, 'Torta Melcochuda de Chocolate Belga & Arequipe', 15500, 'Porción generosa de torta de chocolate al 70%, centro melcochudo con hilos de arequipe y opción de bola de helado de vainilla.', 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80', 'Chocolate Belga 70%, Centro Melcochudo, Arequipe', 'postres', 'dulce', 1, 1),
+(8, 'Postre Tres Leches Huilense con Canela & Arequipe', 13500, 'Bizcocho esponjoso bañado en infusión de tres leches frescas, decorado con merengue suizo tostado y canela en polvo.', 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&auto=format&fit=crop&q=80', 'Tres Leches Tradicional, Arequipe Colombiano, Suave', 'postres', 'dulce', 0, 1),
+
+(9, 'Bubble Waffle Explosión Nutella & Helado', 21900, 'Waffle burbuja recién horneado, relleno con fresas frescas, banano, Nutella original caliente, bola de helado artesanal y barquillo.', 'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=600&auto=format&fit=crop&q=80', 'Bubble Waffle, Nutella Original, Fresas Frescas, Favorito', 'waffles', 'dulce', 1, 1),
+(9, 'Crepe Francés de Arequipe, Queso & Almendras', 17000, 'Fino crepe artesanal relleno de abundante arequipe colombiano, queso campesino fundido y lluvia de almendras tostadas fileteadas.', 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=600&auto=format&fit=crop&q=80', 'Crepe Parisino, Queso Fundido, Almendras Tostadas', 'waffles', 'dulce', 1, 1),
+
+(10, 'Monster Shake Choco-Oreo Suprema', 17500, 'Malteada ultra cremosa a base de helado de chocolate y vainilla, borde escarchado con Nutella y maní, galleta Oreo y crema chantilly.', 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600&auto=format&fit=crop&q=80', 'Monster Shake, Galleta Oreo, Nutella, Chantilly', 'malteadas', 'dulce', 1, 1),
+(10, 'Malteada Frutos Amarillos & Maracuyá Silvestre', 15900, 'Refrescante y cremosa malteada elaborada con pulpa pura de maracuyá huilense, helado artesanal y salsa de frutos amarillos.', 'https://images.unsplash.com/photo-1553787499-6f9133860278?w=600&auto=format&fit=crop&q=80', 'Maracuyá Huilense, Refrescante, Helado Artesanal', 'malteadas', 'dulce', 0, 1);
 
 -- ---------------------------------------------------------
 -- 12. Tabla: Opciones de Personalización de Platos
 -- ---------------------------------------------------------
 CREATE TABLE `item_options` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `category` ENUM('termino', 'pan', 'topping', 'salsa') NOT NULL,
+  `category` VARCHAR(50) NOT NULL,
+  `item_type` ENUM('salado', 'dulce', 'ambos') DEFAULT 'salado',
   `name` VARCHAR(100) NOT NULL,
   `price` INT DEFAULT 0,
   `is_default` TINYINT(1) DEFAULT 0,
@@ -342,29 +369,73 @@ CREATE TABLE `item_options` (
   `is_active` TINYINT(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `item_options` (`category`, `name`, `price`, `is_default`, `icon`) VALUES
-('termino', 'Término Medio (Centro rojo y jugoso)', 0, 0, 'radio_button_unchecked'),
-('termino', 'Tres Cuartos - 3/4 (Punto ideal de la casa)', 0, 1, 'radio_button_checked'),
-('termino', 'Bien Asada (Completamente cocida a la brasa)', 0, 0, 'radio_button_unchecked'),
+INSERT INTO `item_options` (`category`, `item_type`, `name`, `price`, `is_default`, `icon`) VALUES
+-- Salados
+('termino', 'salado', 'Término Medio (Centro rojo y jugoso)', 0, 0, 'radio_button_unchecked'),
+('termino', 'salado', 'Tres Cuartos - 3/4 (Punto ideal de la casa)', 0, 1, 'radio_button_checked'),
+('termino', 'salado', 'Bien Asada (Completamente cocida a la brasa)', 0, 0, 'radio_button_unchecked'),
 
-('pan', 'Pan Brioche Dorado Tradicional', 0, 1, 'bakery_dining'),
-('pan', 'Pan Rústico con Ajonjolí Negro', 1500, 0, 'grain'),
-('pan', 'Pan con Orégano y Queso Parmesano', 2000, 0, 'cookie'),
-('pan', 'Envoltura de Lechuga Batavia (Sin gluten)', 0, 0, 'eco'),
+('pan', 'salado', 'Pan Brioche Dorado Tradicional', 0, 1, 'bakery_dining'),
+('pan', 'salado', 'Pan Rústico con Ajonjolí Negro', 1500, 0, 'grain'),
+('pan', 'salado', 'Pan con Orégano y Queso Parmesano', 2000, 0, 'cookie'),
+('pan', 'salado', 'Envoltura de Lechuga Batavia (Sin gluten)', 0, 0, 'eco'),
 
-('topping', 'Tocineta Ahumada Crunch (Extra)', 3500, 0, 'bacon'),
-('topping', 'Huevo Frito Campesino Yema Tierna', 2000, 0, 'egg'),
-('topping', 'Queso Campesino Asado de Algeciras', 3000, 0, 'cheese'),
-('topping', 'Carne de Res Adicional 150g al Carbón', 7500, 0, 'kebab_dining'),
-('topping', 'Cebolla Caramelizada en Panela', 1500, 0, 'scatter_plot'),
-('topping', 'Chicharrón Crocante Picado', 4000, 0, 'restaurant'),
-('topping', 'Papas Fosforito Crujientes', 1200, 0, 'lunch_dining'),
+('topping', 'salado', 'Tocineta Ahumada Crunch (Extra)', 3500, 0, 'bacon'),
+('topping', 'salado', 'Huevo Frito Campesino Yema Tierna', 2000, 0, 'egg'),
+('topping', 'salado', 'Queso Campesino Asado de Algeciras', 3000, 0, 'cheese'),
+('topping', 'salado', 'Carne de Res Adicional 150g al Carbón', 7500, 0, 'kebab_dining'),
+('topping', 'salado', 'Cebolla Caramelizada en Panela', 1500, 0, 'scatter_plot'),
+('topping', 'salado', 'Chicharrón Crocante Picado', 4000, 0, 'restaurant'),
+('topping', 'salado', 'Papas Fosforito Crujientes', 1200, 0, 'lunch_dining'),
 
-('salsa', 'Tártara Especial de la Abuela', 0, 1, 'check_box'),
-('salsa', 'BBQ Artesanal con Guayaba Huilense', 0, 1, 'check_box'),
-('salsa', 'Salsa de Ajo Suave & Perejil', 0, 0, 'check_box_outline_blank'),
-('salsa', 'Piña Melada Colombiana', 0, 0, 'check_box_outline_blank'),
-('salsa', 'Picante Casero Ají Opita (Medio)', 0, 0, 'check_box_outline_blank');
+('salsa', 'salado', 'Tártara Especial de la Abuela', 0, 1, 'check_box'),
+('salsa', 'salado', 'BBQ Artesanal con Guayaba Huilense', 0, 1, 'check_box'),
+('salsa', 'salado', 'Salsa de Ajo Suave & Perejil', 0, 0, 'check_box_outline_blank'),
+('salsa', 'salado', 'Piña Melada Colombiana', 0, 0, 'check_box_outline_blank'),
+('salsa', 'salado', 'Picante Casero Ají Opita (Medio)', 0, 0, 'check_box_outline_blank'),
+
+-- Dulces: Sabores de Helado / Base
+('sabor_helado', 'dulce', 'Vainilla Francesa Bourbon (Artesanal)', 0, 1, 'icecream'),
+('sabor_helado', 'dulce', 'Chocolate Belga Intenso 70%', 0, 0, 'icecream'),
+('sabor_helado', 'dulce', 'Frutos Rojos Silvestres Huilenses', 0, 0, 'icecream'),
+('sabor_helado', 'dulce', 'Arequipe Colombiano Caramelizado', 0, 0, 'icecream'),
+('sabor_helado', 'dulce', 'Maracuyá Tropical del Huila', 0, 0, 'icecream'),
+('sabor_helado', 'dulce', 'Pistacho Siciliano Tostado Real', 3000, 0, 'icecream'),
+('sabor_helado', 'dulce', 'Mora Silvestre en Leche Fresca', 0, 0, 'icecream'),
+('sabor_helado', 'dulce', 'Brownie Fudge & Helado Vainilla', 1500, 0, 'icecream'),
+
+-- Dulces: Base de Presentación
+('base_dulce', 'dulce', 'Vaso Ecológico Especial para Postre', 0, 1, 'local_cafe'),
+('base_dulce', 'dulce', 'Cono Waffle Crocante de Vainilla y Canela', 1500, 0, 'bakery_dining'),
+('base_dulce', 'dulce', 'Canasta de Galleta Mantequilla Horneada', 2500, 0, 'cookie'),
+('base_dulce', 'dulce', 'Masa de Waffle Tradicional Dorada', 0, 0, 'waffle'),
+('base_dulce', 'dulce', 'Masa Red Velvet con Toque de Vainilla', 2000, 0, 'cake'),
+
+-- Dulces: Siropes y Salsas
+('sirope_dulce', 'dulce', 'Nutella Original Caliente y Fundida', 0, 1, 'water_drop'),
+('sirope_dulce', 'dulce', 'Arequipe Artesanal Tibio de la Casa', 0, 1, 'water_drop'),
+('sirope_dulce', 'dulce', 'Coulis Casero de Frutos Rojos y Moras', 0, 0, 'water_drop'),
+('sirope_dulce', 'dulce', 'Caramelo Salado (Salted Caramel Gourmet)', 0, 0, 'water_drop'),
+('sirope_dulce', 'dulce', 'Chocolate Blanco Derretido Suave', 0, 0, 'water_drop'),
+('sirope_dulce', 'dulce', 'Miel de Maple Pura de Canadá', 0, 0, 'water_drop'),
+('sirope_dulce', 'dulce', 'Salsa Exótica de Maracuyá Silvestre', 0, 0, 'water_drop'),
+
+-- Dulces: Toppings Crujientes
+('topping_dulce', 'dulce', 'Galleta Oreo Original Triturada', 2500, 0, 'cookie'),
+('topping_dulce', 'dulce', 'Almendras Tostadas Fileteadas', 3000, 0, 'grain'),
+('topping_dulce', 'dulce', 'Chispas de Chocolate Belga Semi-Amargo', 2000, 0, 'scatter_plot'),
+('topping_dulce', 'dulce', 'Fresas Frescas Picadas al Instante', 3500, 0, 'nutrition'),
+('topping_dulce', 'dulce', 'Rodajas de Banano Fresco Criollo', 1500, 0, 'nutrition'),
+('topping_dulce', 'dulce', 'Crema Chantilly Casera Ultra Espesa', 2500, 0, 'cloud'),
+('topping_dulce', 'dulce', 'Barquillos Crocantes Rellenos de Chocolate', 2000, 0, 'bakery_dining'),
+('topping_dulce', 'dulce', 'Lluvia de M&Ms de Chocolate Crujiente', 2500, 0, 'stars'),
+('topping_dulce', 'dulce', 'Gomitas Dulces & Ácidas Frutales', 2000, 0, 'bubble_chart'),
+('topping_dulce', 'dulce', 'Bola Adicional de Gelato a Elección', 4500, 0, 'icecream'),
+
+-- Dulces: Nivel de Dulzura
+('dulzura', 'dulce', 'Dulzura Tradicional de la Casa (Equilibrado Perfecto)', 0, 1, 'check_circle'),
+('dulzura', 'dulce', 'Dulzura Ligera / Bajo en Azúcar', 0, 0, 'check_circle'),
+('dulzura', 'dulce', 'Toque Extra Dulce para Fanáticos', 0, 0, 'check_circle');
 
 -- ---------------------------------------------------------
 -- 13. Tabla: Cupones de Descuento

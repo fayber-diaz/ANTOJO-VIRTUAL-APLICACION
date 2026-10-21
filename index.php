@@ -182,19 +182,53 @@ $db = getDB();
       </div>
     </section>
 
+    <!-- Selector de Tipo de Antojo (Comidas Rápidas vs Dulces y Postres) -->
+    <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.35rem;">
+      <button class="cat-chip active" id="btn-mood-all" onclick="App.filterBySiteType('all')" style="font-weight: 800; cursor: pointer;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">auto_awesome</span>
+        🌟 Todo el Menú (10 Sitios)
+      </button>
+      <button class="cat-chip" id="btn-mood-salado" onclick="App.filterBySiteType('comidas_rapidas')" style="font-weight: 800; cursor: pointer;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">lunch_dining</span>
+        🍔 Comidas Rápidas & Parrillas (6)
+      </button>
+      <button class="cat-chip" id="btn-mood-dulce" onclick="App.filterBySiteType('dulces')" style="font-weight: 800; cursor: pointer; background: #fff5f5; border-color: #fca5a5;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">icecream</span>
+        🍨 Dulces, Helados & Postres (4)
+      </button>
+    </div>
+
     <!-- Selector / Slider de Categorías Neumórficas -->
-    <section class="categories-slider">
+    <section class="categories-slider" id="subcategories-slider">
       <button class="cat-chip active" data-cat="all" onclick="App.filterByCategory('all')">
         <span class="material-symbols-outlined" style="font-size: 20px;">restaurant</span>
-        Todos los Antojos
+        Todos
       </button>
+      <!-- Categorías Dulces -->
+      <button class="cat-chip sweet-cat" data-cat="helados" onclick="App.filterByCategory('helados')" style="color: #be123c;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">icecream</span>
+        🍨 Helados & Gelato
+      </button>
+      <button class="cat-chip sweet-cat" data-cat="postres" onclick="App.filterByCategory('postres')" style="color: #be123c;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">cake</span>
+        🍰 Postres & Tortas
+      </button>
+      <button class="cat-chip sweet-cat" data-cat="waffles" onclick="App.filterByCategory('waffles')" style="color: #be123c;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">cookie</span>
+        🧇 Waffles & Crepes
+      </button>
+      <button class="cat-chip sweet-cat" data-cat="malteadas" onclick="App.filterByCategory('malteadas')" style="color: #be123c;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">local_cafe</span>
+        🥤 Monster Shakes
+      </button>
+      <!-- Categorías Saladas -->
       <button class="cat-chip" data-cat="burgers" onclick="App.filterByCategory('burgers')">
         <span class="material-symbols-outlined" style="font-size: 20px;">lunch_dining</span>
-        Hamburguesas al Carbón
+        Hamburguesas
       </button>
       <button class="cat-chip" data-cat="salchipapas" onclick="App.filterByCategory('salchipapas')">
         <span class="material-symbols-outlined" style="font-size: 20px;">fastfood</span>
-        Salchipapas Monumentales
+        Salchipapas
       </button>
       <button class="cat-chip" data-cat="arepas" onclick="App.filterByCategory('arepas')">
         <span class="material-symbols-outlined" style="font-size: 20px;">bakery_dining</span>
@@ -206,7 +240,7 @@ $db = getDB();
       </button>
       <button class="cat-chip" data-cat="desgranados" onclick="App.filterByCategory('desgranados')">
         <span class="material-symbols-outlined" style="font-size: 20px;">grain</span>
-        Desgranados & Mazorca
+        Desgranados
       </button>
     </section>
 
@@ -1027,63 +1061,8 @@ $db = getDB();
         <button class="modal-close-btn" onclick="App.closeCustomizer()">✕</button>
       </div>
 
-      <div class="modal-body">
-        <!-- Sección 1: Término de la Carne -->
-        <div class="modal-section">
-          <div class="modal-section-title">
-            <span>1. Término de la Carne al Carbón</span>
-            <span style="font-size: 0.75rem; color: #dc2626; font-weight: 800;">Obligatorio</span>
-          </div>
-          <div class="modal-section-sub">Selecciona la jugosidad deseada en la parrilla</div>
-          <div id="modal-terminos-list">
-            <!-- Dinámico desde MySQL -->
-          </div>
-        </div>
-
-        <!-- Sección 2: Tipo de Pan Artesanal -->
-        <div class="modal-section">
-          <div class="modal-section-title">
-            <span>2. Selección de Pan Artesanal</span>
-            <span style="font-size: 0.75rem; color: #dc2626; font-weight: 800;">Obligatorio</span>
-          </div>
-          <div class="modal-section-sub">Horneado fresco a diario en panadería local</div>
-          <div id="modal-panes-list">
-            <!-- Dinámico desde MySQL -->
-          </div>
-        </div>
-
-        <!-- Sección 3: Toppings Extras con Contador -->
-        <div class="modal-section">
-          <div class="modal-section-title">
-            <span>3. Toppings & Adiciones Especiales</span>
-            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Opcionales</span>
-          </div>
-          <div class="modal-section-sub">Agrega tocineta, quesos asados o doble carne</div>
-          <div id="modal-toppings-list">
-            <!-- Dinámico desde MySQL -->
-          </div>
-        </div>
-
-        <!-- Sección 4: Salsas Colombianas de la Casa -->
-        <div class="modal-section">
-          <div class="modal-section-title">
-            <span>4. Salsas Artesanales de la Casa</span>
-            <span style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">Gratis</span>
-          </div>
-          <div class="modal-section-sub">Elige las salsas que acompañarán tu orden</div>
-          <div id="modal-salsas-list">
-            <!-- Dinámico desde MySQL -->
-          </div>
-        </div>
-
-        <!-- Sección 5: Notas Especiales -->
-        <div class="modal-section" style="border-bottom: none;">
-          <div class="modal-section-title">
-            <span>5. Notas para el Maestro Parrillero</span>
-          </div>
-          <div class="modal-section-sub">¿Sin cebolla? ¿Salsa aparte? Escríbelo aquí:</div>
-          <textarea id="modal-notes-input" class="form-textarea" rows="2" placeholder="Ej: Sin cebolla, salsas en recipientes separados por favor..."></textarea>
-        </div>
+      <div class="modal-body" id="customizer-modal-body">
+        <!-- Contenido generado dinámicamente según sea Comida Salada o Dulce -->
       </div>
 
       <!-- Footer del Modal -->

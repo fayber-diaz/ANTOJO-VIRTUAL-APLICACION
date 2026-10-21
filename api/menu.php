@@ -13,10 +13,17 @@ try {
         $allOptions = $stmt->fetchAll();
 
         $grouped = [
+            // Salados / Comidas Rápidas
             'terminos' => [],
             'panes' => [],
             'toppings' => [],
-            'salsas' => []
+            'salsas' => [],
+            // Dulces, Postres & Heladería
+            'sabores' => [],
+            'bases_dulces' => [],
+            'siropes' => [],
+            'toppings_dulces' => [],
+            'dulzura' => []
         ];
 
         foreach ($allOptions as $opt) {
@@ -26,6 +33,11 @@ try {
                 'pan' => 'panes',
                 'topping' => 'toppings',
                 'salsa' => 'salsas',
+                'sabor_helado' => 'sabores',
+                'base_dulce' => 'bases_dulces',
+                'sirope_dulce' => 'siropes',
+                'topping_dulce' => 'toppings_dulces',
+                'dulzura' => 'dulzura',
                 default => 'toppings'
             };
 
@@ -47,7 +59,7 @@ try {
     if (isset($_GET['id'])) {
         $dishId = (int)$_GET['id'];
         $stmt = $db->prepare("
-            SELECT m.*, r.name as restaurant_name, r.delivery_time, r.delivery_fee
+            SELECT m.*, r.name as restaurant_name, r.delivery_time, r.delivery_fee, r.site_type
             FROM `menu_items` m
             JOIN `restaurants` r ON m.restaurant_id = r.id
             WHERE m.id = :id AND m.is_available = 1
@@ -63,6 +75,7 @@ try {
         $dish['price'] = (int)$dish['price'];
         $dish['price_formatted'] = '$' . number_format($dish['price'], 0, ',', '.');
         $dish['tags_array'] = !empty($dish['tags']) ? array_map('trim', explode(',', $dish['tags'])) : [];
+        $dish['dish_type'] = $dish['dish_type'] ?: (in_array($dish['category'], ['helados', 'postres', 'waffles', 'malteadas']) ? 'dulce' : 'salado');
 
         jsonResponse([
             'success' => true,
@@ -76,14 +89,18 @@ try {
     $restaurantId = isset($_GET['restaurant_id']) ? (int)$_GET['restaurant_id'] : null;
 
     $query = "
-        SELECT m.*, r.name as restaurant_name, r.badge as restaurant_badge, r.delivery_time
+        SELECT m.*, r.name as restaurant_name, r.badge as restaurant_badge, r.delivery_time, r.site_type
         FROM `menu_items` m
         JOIN `restaurants` r ON m.restaurant_id = r.id
         WHERE m.is_available = 1
     ";
     $params = [];
 
-    if ($category !== 'all' && !empty($category)) {
+    if ($category === 'comidas_rapidas' || $category === 'salados') {
+        $query .= " AND m.dish_type = 'salado'";
+    } elseif ($category === 'dulces' || $category === 'postres_all') {
+        $query .= " AND m.dish_type = 'dulce'";
+    } elseif ($category !== 'all' && !empty($category)) {
         $query .= " AND m.category = :category";
         $params[':category'] = $category;
     }
@@ -110,6 +127,7 @@ try {
         $d['price'] = (int)$d['price'];
         $d['price_formatted'] = '$' . number_format($d['price'], 0, ',', '.');
         $d['tags_array'] = !empty($d['tags']) ? array_map('trim', explode(',', $d['tags'])) : [];
+        $d['dish_type'] = $d['dish_type'] ?: (in_array($d['category'], ['helados', 'postres', 'waffles', 'malteadas']) ? 'dulce' : 'salado');
         $d['is_featured'] = (bool)$d['is_featured'];
         $d['is_popular'] = (bool)$d['is_popular'];
     }
