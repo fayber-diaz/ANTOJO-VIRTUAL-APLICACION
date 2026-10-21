@@ -202,7 +202,9 @@ const App = {
   // Peticiones a la API PHP
   async fetchRestaurants() {
     try {
-      const res = await fetch(`api/restaurants.php?category=${encodeURIComponent(this.state.selectedCategory)}&search=${encodeURIComponent(this.state.searchQuery)}`);
+      const res = await fetch(`api/restaurants.php?category=${encodeURIComponent(this.state.selectedCategory)}&search=${encodeURIComponent(this.state.searchQuery)}&format=json`, {
+        headers: { 'Accept': 'application/json' }
+      });
       const data = await res.json();
       if (data.success) {
         this.state.restaurants = data.data;
@@ -215,7 +217,9 @@ const App = {
 
   async fetchDishes() {
     try {
-      const res = await fetch(`api/menu.php?category=${encodeURIComponent(this.state.selectedCategory)}&search=${encodeURIComponent(this.state.searchQuery)}`);
+      const res = await fetch(`api/menu.php?category=${encodeURIComponent(this.state.selectedCategory)}&search=${encodeURIComponent(this.state.searchQuery)}&format=json`, {
+        headers: { 'Accept': 'application/json' }
+      });
       const data = await res.json();
       if (data.success) {
         this.state.dishes = data.data;
@@ -228,7 +232,9 @@ const App = {
 
   async fetchCustomizerOptions() {
     try {
-      const res = await fetch('api/menu.php?options=1');
+      const res = await fetch('api/menu.php?options=1&format=json', {
+        headers: { 'Accept': 'application/json' }
+      });
       const data = await res.json();
       if (data.success) {
         this.state.customizerOptions = data.options;

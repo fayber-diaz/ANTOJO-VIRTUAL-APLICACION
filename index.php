@@ -81,6 +81,18 @@ $db = getDB();
             <span id="audio-toggle-text">Sonido</span>
           </button>
 
+          <!-- Directorio Visual de Restaurantes -->
+          <a href="restaurantes.php" target="_blank" class="btn-admin-link" title="Directorio visual de 40 restaurantes aliados en Neiva">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #dc2626;">storefront</span>
+            <span>40 Sitios</span>
+          </a>
+
+          <!-- Catálogo Visual de Menú -->
+          <a href="menu.php" target="_blank" class="btn-admin-link" title="Catálogo visual de 79 platos y antojos de Neiva">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #e11d48;">menu_book</span>
+            <span>Menú (79)</span>
+          </a>
+
           <!-- Portal Rider para Domiciliario -->
           <a href="rider.php" target="_blank" class="btn-admin-link" title="Portal para el repartidor en moto">
             <span class="material-symbols-outlined" style="font-size: 18px; color: #fea619;">two_wheeler</span>
@@ -186,11 +198,11 @@ $db = getDB();
     <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.35rem;">
       <button class="cat-chip active" id="btn-mood-all" onclick="App.filterBySiteType('all')" style="font-weight: 800; cursor: pointer;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">auto_awesome</span>
-        🌟 Todo el Menú (28 Sitios)
+        🌟 Todo el Menú (40 Sitios)
       </button>
       <button class="cat-chip" id="btn-mood-salado" onclick="App.filterBySiteType('comidas_rapidas')" style="font-weight: 800; cursor: pointer;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #dc2626;">lunch_dining</span>
-        🍔 Comidas Rápidas & Parrillas (14)
+        🍔 Comidas Rápidas, Pizzas & Asados (26)
       </button>
       <button class="cat-chip" id="btn-mood-dulce" onclick="App.filterBySiteType('dulces')" style="font-weight: 800; cursor: pointer; background: #fff5f5; border-color: #fca5a5;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">icecream</span>
@@ -203,6 +215,43 @@ $db = getDB();
       <button class="cat-chip active" data-cat="all" onclick="App.filterByCategory('all')">
         <span class="material-symbols-outlined" style="font-size: 20px;">restaurant</span>
         Todos
+      </button>
+      <!-- Categorías Saladas, Pizzas & Asados -->
+      <button class="cat-chip" data-cat="pizzas" onclick="App.filterByCategory('pizzas')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">local_pizza</span>
+        🍕 Pizzas & Calzones
+      </button>
+      <button class="cat-chip" data-cat="asados" onclick="App.filterByCategory('asados')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">outdoor_grill</span>
+        🥩 Asados al Carbón
+      </button>
+      <button class="cat-chip" data-cat="burgers" onclick="App.filterByCategory('burgers')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">lunch_dining</span>
+        🍔 Hamburguesas
+      </button>
+      <button class="cat-chip" data-cat="salchipapas" onclick="App.filterByCategory('salchipapas')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">fastfood</span>
+        🍟 Salchipapas
+      </button>
+      <button class="cat-chip" data-cat="pollo" onclick="App.filterByCategory('pollo')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">restaurant</span>
+        🍗 Pollo Crispy
+      </button>
+      <button class="cat-chip" data-cat="mexicana" onclick="App.filterByCategory('mexicana')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">lunch_dining</span>
+        🌮 Tacos & Tex-Mex
+      </button>
+      <button class="cat-chip" data-cat="arepas" onclick="App.filterByCategory('arepas')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">bakery_dining</span>
+        🫓 Arepas & Patacones
+      </button>
+      <button class="cat-chip" data-cat="perros" onclick="App.filterByCategory('perros')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">kebab_dining</span>
+        🌭 Perros Calientes
+      </button>
+      <button class="cat-chip" data-cat="desgranados" onclick="App.filterByCategory('desgranados')">
+        <span class="material-symbols-outlined" style="font-size: 20px;">grain</span>
+        🌽 Desgranados
       </button>
       <!-- Categorías Dulces -->
       <button class="cat-chip sweet-cat" data-cat="helados" onclick="App.filterByCategory('helados')" style="color: #be123c;">
@@ -220,27 +269,6 @@ $db = getDB();
       <button class="cat-chip sweet-cat" data-cat="malteadas" onclick="App.filterByCategory('malteadas')" style="color: #be123c;">
         <span class="material-symbols-outlined" style="font-size: 20px; color: #e11d48;">local_cafe</span>
         🥤 Monster Shakes
-      </button>
-      <!-- Categorías Saladas -->
-      <button class="cat-chip" data-cat="burgers" onclick="App.filterByCategory('burgers')">
-        <span class="material-symbols-outlined" style="font-size: 20px;">lunch_dining</span>
-        Hamburguesas
-      </button>
-      <button class="cat-chip" data-cat="salchipapas" onclick="App.filterByCategory('salchipapas')">
-        <span class="material-symbols-outlined" style="font-size: 20px;">fastfood</span>
-        Salchipapas
-      </button>
-      <button class="cat-chip" data-cat="arepas" onclick="App.filterByCategory('arepas')">
-        <span class="material-symbols-outlined" style="font-size: 20px;">bakery_dining</span>
-        Arepas & Patacones
-      </button>
-      <button class="cat-chip" data-cat="perros" onclick="App.filterByCategory('perros')">
-        <span class="material-symbols-outlined" style="font-size: 20px;">kebab_dining</span>
-        Perros Calientes
-      </button>
-      <button class="cat-chip" data-cat="desgranados" onclick="App.filterByCategory('desgranados')">
-        <span class="material-symbols-outlined" style="font-size: 20px;">grain</span>
-        Desgranados
       </button>
     </section>
 
