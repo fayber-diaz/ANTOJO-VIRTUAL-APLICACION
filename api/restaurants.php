@@ -88,17 +88,21 @@ try {
   <link rel="stylesheet" href="../assets/css/variables.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      font-size: 13.5px;
+      scroll-behavior: smooth;
+    }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: #f1f4f9;
       color: #1e293b;
       min-height: 100vh;
-      padding-bottom: 3rem;
+      padding-bottom: 2.5rem;
     }
     .header-nav {
       background: #ffffff;
       box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-      padding: 1rem 1.5rem;
+      padding: 0.65rem 1.25rem;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -106,21 +110,21 @@ try {
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.85rem;
     }
     .logo-container {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       text-decoration: none;
       color: inherit;
     }
     .logo-badge {
       background: linear-gradient(135deg, #dc2626, #ef4444);
       color: white;
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -128,15 +132,15 @@ try {
     }
     .nav-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: 0.65rem;
       align-items: center;
       flex-wrap: wrap;
     }
     .btn {
-      padding: 0.6rem 1.1rem;
+      padding: 0.5rem 1rem;
       border-radius: 10px;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
@@ -162,58 +166,58 @@ try {
       background: #cbd5e1;
     }
     .hero-banner {
-      max-width: 1200px;
-      margin: 1.5rem auto;
-      padding: 1.75rem;
+      max-width: 1220px;
+      margin: 1.25rem auto;
+      padding: 1.35rem 1.75rem;
       background: linear-gradient(135deg, #ffffff, #f8fafc);
-      border-radius: 20px;
+      border-radius: 16px;
       box-shadow: 8px 8px 24px #d9e2ec, -8px -8px 24px #ffffff;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1.25rem;
+      gap: 1rem;
     }
     .search-filter-box {
-      max-width: 1200px;
-      margin: 0 auto 1.5rem;
+      max-width: 1220px;
+      margin: 0 auto 1.25rem;
       padding: 0 1rem;
     }
     .search-input-wrapper {
       position: relative;
-      margin-bottom: 1rem;
+      margin-bottom: 0.85rem;
     }
     .search-input-wrapper input {
       width: 100%;
-      padding: 0.9rem 1rem 0.9rem 3rem;
-      border-radius: 14px;
+      padding: 0.65rem 1rem 0.65rem 2.75rem;
+      border-radius: 12px;
       border: 1px solid #e2e8f0;
       background: #ffffff;
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-family: inherit;
       box-shadow: inset 2px 2px 5px rgba(0,0,0,0.04);
       outline: none;
     }
     .search-input-wrapper span {
       position: absolute;
-      left: 1rem;
+      left: 0.9rem;
       top: 50%;
       transform: translateY(-50%);
       color: #94a3b8;
     }
     .filter-pills {
       display: flex;
-      gap: 0.6rem;
+      gap: 0.5rem;
       overflow-x: auto;
-      padding-bottom: 0.5rem;
+      padding-bottom: 0.4rem;
     }
     .pill {
-      padding: 0.5rem 1rem;
+      padding: 0.45rem 0.95rem;
       border-radius: 20px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       color: #475569;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
@@ -230,18 +234,18 @@ try {
       border-color: #dc2626;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1220px;
       margin: 0 auto;
       padding: 0 1rem;
     }
     .restaurants-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
     }
     .restaurant-card {
       background: #ffffff;
-      border-radius: 18px;
+      border-radius: 16px;
       overflow: hidden;
       box-shadow: 6px 6px 18px #dce4ee, -6px -6px 18px #ffffff;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -254,7 +258,7 @@ try {
     }
     .card-img-wrap {
       position: relative;
-      height: 180px;
+      height: 155px;
       overflow: hidden;
       background: #e2e8f0;
     }

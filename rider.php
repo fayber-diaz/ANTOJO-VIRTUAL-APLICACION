@@ -108,6 +108,11 @@ try {
       -webkit-tap-highlight-color: transparent;
     }
 
+    html {
+      font-size: 13.5px;
+      scroll-behavior: smooth;
+    }
+
     body {
       background-color: var(--neu-bg);
       font-family: 'Plus Jakarta Sans', sans-serif;
