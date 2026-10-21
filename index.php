@@ -20,6 +20,7 @@ $db = getDB();
   <!-- Hojas de Estilos Neumórficas -->
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/payments.css">
 </head>
 <body>
 
@@ -304,24 +305,28 @@ $db = getDB();
         <div class="checkout-card">
           <h3 class="checkout-card-title">
             <span class="material-symbols-outlined" style="color: #fea619;">payments</span>
-            Método de Pago
+            Pasarela de Pagos Multibanco
           </h3>
+          <p style="font-size: 0.85rem; color: var(--color-on-surface-variant); margin-bottom: 1.25rem;">
+            Transacciones seguras encriptadas para Neiva con soporte para todos los bancos de Colombia, tarjetas y billeteras.
+          </p>
+
           <div class="payment-methods-grid">
-            <div class="pay-card active" data-method="nequi">
+            <div class="pay-card active" data-method="card">
+              <span class="material-symbols-outlined" style="font-size: 26px;">credit_card</span>
+              <span style="font-size: 0.85rem; font-weight: 800;">Tarjeta</span>
+            </div>
+            <div class="pay-card" data-method="pse">
+              <span class="material-symbols-outlined" style="font-size: 26px;">account_balance</span>
+              <span style="font-size: 0.85rem; font-weight: 800;">PSE Bancos</span>
+            </div>
+            <div class="pay-card" data-method="nequi">
               <span class="material-symbols-outlined" style="font-size: 26px;">account_balance_wallet</span>
               <span style="font-size: 0.85rem; font-weight: 800;">Nequi</span>
             </div>
             <div class="pay-card" data-method="daviplata">
               <span class="material-symbols-outlined" style="font-size: 26px;">phone_android</span>
               <span style="font-size: 0.85rem; font-weight: 800;">Daviplata</span>
-            </div>
-            <div class="pay-card" data-method="pse">
-              <span class="material-symbols-outlined" style="font-size: 26px;">account_balance</span>
-              <span style="font-size: 0.85rem; font-weight: 800;">PSE</span>
-            </div>
-            <div class="pay-card" data-method="card">
-              <span class="material-symbols-outlined" style="font-size: 26px;">credit_card</span>
-              <span style="font-size: 0.85rem; font-weight: 800;">Tarjeta</span>
             </div>
             <div class="pay-card" data-method="cash_efectivo">
               <span class="material-symbols-outlined" style="font-size: 26px;">attach_money</span>
@@ -333,14 +338,285 @@ $db = getDB();
             </div>
           </div>
 
-          <!-- Selector de cambio en efectivo -->
-          <div id="cash-change-box" style="display: none; background: var(--neu-bg); box-shadow: var(--neu-inset); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle);">
-            <label class="form-label" style="color: #855300;">¿Con cuánto vas a pagar en efectivo?</label>
-            <select id="cash-change-select" class="form-select" style="box-shadow: var(--neu-extruded-sm);">
-              <option value="exacto">Pago exacto (No requiero cambio)</option>
-              <option value="50000">Billete de $50.000 COP</option>
-              <option value="100000">Billete de $100.000 COP</option>
-            </select>
+          <!-- Contenedor Dinámico de la Pasarela de Pagos -->
+          <div class="gateway-container">
+            
+            <!-- PANEL 1: TARJETAS DE CRÉDITO Y DÉBITO -->
+            <div id="gateway-panel-card" class="gateway-panel">
+              <!-- Tarjeta Visual Neumórfica 3D -->
+              <div class="card-visual-wrapper">
+                <div class="neu-card-preview">
+                  <div class="neu-card-top">
+                    <div class="neu-card-chip"></div>
+                    <div class="neu-card-contactless">
+                      <span class="material-symbols-outlined">contactless</span>
+                    </div>
+                    <div id="card-brand-display" class="neu-card-brand-badge visa">
+                      <span>VISA</span>
+                    </div>
+                  </div>
+                  <div id="card-number-display" class="neu-card-number">•••• •••• •••• 4242</div>
+                  <div class="neu-card-bottom">
+                    <div>
+                      <div class="neu-card-exp-label">Titular de la Tarjeta</div>
+                      <div id="card-holder-display" class="neu-card-holder-name">MATEO RODRÍGUEZ</div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div class="neu-card-exp-label">Vence</div>
+                      <div id="card-exp-display" class="neu-card-exp-val">12/28</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Formulario de Tarjeta -->
+              <div class="card-form-grid">
+                <div class="card-form-full form-group">
+                  <label class="form-label">Número de Tarjeta</label>
+                  <div style="position: relative;">
+                    <input type="text" id="card-input-number" class="form-input" placeholder="4000 1234 5678 9010" maxlength="19" autocomplete="cc-number">
+                    <span id="card-input-brand-icon" class="material-symbols-outlined" style="position: absolute; right: 14px; top: 12px; color: #566479;">credit_card</span>
+                  </div>
+                </div>
+
+                <div class="card-form-full form-group">
+                  <label class="form-label">Nombre del Titular (como aparece en el plástico)</label>
+                  <input type="text" id="card-input-name" class="form-input" placeholder="Ej: MATEO RODRIGUEZ" value="MATEO RODRÍGUEZ" autocomplete="cc-name">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Expiración (MM/AA)</label>
+                  <input type="text" id="card-input-exp" class="form-input" placeholder="MM/AA" maxlength="5" value="12/28" autocomplete="cc-exp">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Código CVV / CVC</label>
+                  <div style="position: relative;">
+                    <input type="password" id="card-input-cvv" class="form-input" placeholder="•••" maxlength="4" value="123" autocomplete="cc-csc">
+                    <span class="material-symbols-outlined" style="position: absolute; right: 12px; top: 12px; font-size: 18px; color: #855300;" title="3 o 4 dígitos de seguridad en el reverso">lock</span>
+                  </div>
+                </div>
+
+                <div class="card-form-full form-group">
+                  <label class="form-label">Diferir a Cuotas</label>
+                  <select id="card-input-installments" class="form-select">
+                    <option value="1" selected>1 cuota (Sin intereses bancarios)</option>
+                    <option value="2">2 cuotas</option>
+                    <option value="3">3 cuotas</option>
+                    <option value="6">6 cuotas</option>
+                    <option value="12">12 cuotas</option>
+                    <option value="24">24 cuotas</option>
+                    <option value="36">36 cuotas</option>
+                  </select>
+                  <div id="card-installment-calc" class="installments-badge">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">payments</span>
+                    <span>1 cuota de <strong id="card-installment-amount">$0</strong></span>
+                  </div>
+                </div>
+
+                <div class="card-form-full" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                  <input type="checkbox" id="card-save-checkbox" checked style="accent-color: #dc2626; width: 18px; height: 18px; cursor: pointer;">
+                  <label for="card-save-checkbox" style="font-size: 0.8rem; color: var(--color-on-surface-variant); cursor: pointer;">
+                    Guardar tarjeta tokenizada de forma segura para compras rápidas
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 2: PSE (18 BANCOS DE COLOMBIA) -->
+            <div id="gateway-panel-pse" class="gateway-panel" style="display: none;">
+              <div class="pse-banner">
+                <div class="pse-badge-logo">
+                  <div class="pse-logo-circle">PSE</div>
+                  <div>
+                    <h4 style="margin: 0; font-family: var(--font-epilogue); font-size: 0.95rem; font-weight: 800; color: #003366;">
+                      Pagos Seguros en Línea
+                    </h4>
+                    <span style="font-size: 0.75rem; color: var(--color-on-surface-variant);">
+                      Débito en tiempo real desde tu cuenta bancaria
+                    </span>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #1a8340; font-weight: 700;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">verified_user</span>
+                  <span>SSL 256 bits</span>
+                </div>
+              </div>
+
+              <div class="card-form-grid">
+                <div class="card-form-full form-group">
+                  <label class="form-label" style="font-weight: 800; color: #003366;">
+                    Selecciona tu Banco o Entidad Financiera
+                  </label>
+                  <div class="pse-banks-select-wrapper">
+                    <select id="pse-bank-select" class="form-select" style="font-weight: 700; border-color: #003366;">
+                      <optgroup label="Bancos Tradicionales">
+                        <option value="1" selected>Bancolombia S.A.</option>
+                        <option value="4">Banco Davivienda S.A.</option>
+                        <option value="5">Banco de Bogotá</option>
+                        <option value="6">BBVA Colombia</option>
+                        <option value="7">Banco de Occidente</option>
+                        <option value="8">Scotiabank Colpatria</option>
+                        <option value="9">Banco Popular</option>
+                        <option value="10">Banco AV Villas</option>
+                        <option value="11">Banco Caja Social</option>
+                        <option value="12">Banco Itaú</option>
+                        <option value="17">Banco Falabella</option>
+                        <option value="18">Banco Pichincha</option>
+                      </optgroup>
+                      <optgroup label="Neobancos y Billeteras Digitales">
+                        <option value="2">Nequi (PSE Bancolombia)</option>
+                        <option value="3">Daviplata (PSE Davivienda)</option>
+                        <option value="13">Nu Colombia (Nubank)</option>
+                        <option value="14">Lulo Bank</option>
+                        <option value="15">Dale! (Grupo Aval)</option>
+                        <option value="16">RappiPay</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="card-form-full form-group">
+                  <label class="form-label">Tipo de Persona</label>
+                  <div style="display: flex; gap: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+                      <input type="radio" name="pse_person_type" value="natural" checked style="accent-color: #003366;">
+                      Persona Natural
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+                      <input type="radio" name="pse_person_type" value="juridica" style="accent-color: #003366;">
+                      Persona Jurídica (Empresa)
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Tipo de Identificación</label>
+                  <select id="pse-doc-type" class="form-select">
+                    <option value="CC" selected>Cédula de Ciudadanía (CC)</option>
+                    <option value="CE">Cédula de Extranjería (CE)</option>
+                    <option value="NIT">NIT (Empresas)</option>
+                    <option value="PP">Pasaporte</option>
+                    <option value="PPT">Permiso por Protección Temporal (PPT)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Número de Identificación</label>
+                  <input type="text" id="pse-doc-number" class="form-input" placeholder="Ej: 1075304128" value="1075304128">
+                </div>
+
+                <div class="card-form-full form-group">
+                  <label class="form-label">Correo Registrado en PSE</label>
+                  <input type="email" id="pse-email" class="form-input" placeholder="correo@ejemplo.com" value="mateo@gmail.com">
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 3: NEQUI DIRECTO -->
+            <div id="gateway-panel-nequi" class="gateway-panel" style="display: none;">
+              <div class="wallet-box-nequi">
+                <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.75rem;">
+                  <span class="material-symbols-outlined" style="color: #c81e6e; font-size: 32px;">account_balance_wallet</span>
+                  <div>
+                    <h4 style="margin: 0; font-family: var(--font-epilogue); font-size: 1.05rem; font-weight: 900; color: #4a154b;">
+                      Pagar con Nequi
+                    </h4>
+                    <span style="font-size: 0.8rem; color: var(--color-on-surface-variant);">
+                      Notificación directa a tu celular o escaneo de QR
+                    </span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Número de Celular Nequi</label>
+                  <input type="tel" id="nequi-phone-input" class="form-input" placeholder="314 289 9012" value="3142899012">
+                </div>
+
+                <div class="qr-simulator-box">
+                  <div class="qr-code-img">
+                    <svg viewBox="0 0 100 100" width="78" height="78">
+                      <rect width="100" height="100" fill="#ffffff" />
+                      <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M20,20 h10 v10 h-10 z" fill="#4a154b"/>
+                      <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M70,20 h10 v10 h-10 z" fill="#4a154b"/>
+                      <path d="M10,60 h30 v30 h-30 z M15,65 v20 h20 v-20 z M20,70 h10 v10 h-10 z" fill="#4a154b"/>
+                      <rect x="50" y="50" width="10" height="10" fill="#c81e6e"/>
+                      <rect x="70" y="50" width="15" height="10" fill="#4a154b"/>
+                      <rect x="50" y="70" width="20" height="15" fill="#4a154b"/>
+                      <rect x="75" y="70" width="15" height="20" fill="#c81e6e"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.85rem; font-weight: 800; color: #4a154b;">
+                      Aprobación Push Instantánea
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--color-on-surface-variant); margin: 0.25rem 0 0 0;">
+                      Al confirmar el pedido recibirás la notificación de cobro en tu app Nequi. Tienes 5 minutos para autorizarlo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 4: DAVIPLATA DIRECTO -->
+            <div id="gateway-panel-daviplata" class="gateway-panel" style="display: none;">
+              <div class="wallet-box-daviplata">
+                <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.75rem;">
+                  <span class="material-symbols-outlined" style="color: #dc2626; font-size: 32px;">phone_android</span>
+                  <div>
+                    <h4 style="margin: 0; font-family: var(--font-epilogue); font-size: 1.05rem; font-weight: 900; color: #991b1b;">
+                      Pagar con Daviplata
+                    </h4>
+                    <span style="font-size: 0.8rem; color: var(--color-on-surface-variant);">
+                      Notificación o código de confirmación OTP
+                    </span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Número de Celular Daviplata</label>
+                  <input type="tel" id="daviplata-phone-input" class="form-input" placeholder="314 289 9012" value="3142899012">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Número de Cédula del Titular</label>
+                  <input type="text" id="daviplata-doc-input" class="form-input" placeholder="1075304128" value="1075304128">
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 5: EFECTIVO CONTRA ENTREGA -->
+            <div id="gateway-panel-cash_efectivo" class="gateway-panel" style="display: none;">
+              <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle);">
+                <label class="form-label" style="color: #855300; font-weight: 800;">
+                  ¿Con cuánto vas a pagar en efectivo?
+                </label>
+                <select id="cash-change-select" class="form-select" style="box-shadow: var(--neu-extruded-sm); margin-bottom: 0.75rem;">
+                  <option value="exacto">Pago exacto (No requiero cambio)</option>
+                  <option value="50000">Billete de $50.000 COP</option>
+                  <option value="100000">Billete de $100.000 COP</option>
+                </select>
+                <div id="cash-change-calc" style="font-size: 0.85rem; color: #00682e; font-weight: 800;">
+                  El domiciliario llevará cambio para tu billete.
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 6: DATÁFONO CONTRA ENTREGA -->
+            <div id="gateway-panel-cash_datafono" class="gateway-panel" style="display: none;">
+              <div style="display: flex; align-items: center; gap: 1rem; background: var(--neu-bg); box-shadow: var(--neu-inset-sm); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle);">
+                <span class="material-symbols-outlined" style="font-size: 36px; color: #855300;">point_of_sale</span>
+                <div>
+                  <div style="font-weight: 800; font-size: 0.95rem; color: var(--color-on-surface);">
+                    Datáfono inalámbrico en tu puerta
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-on-surface-variant); margin: 0.25rem 0 0 0;">
+                    El repartidor llevará un datáfono Redeban / Credibanco compatible con tarjetas débito, crédito y pago sin contacto (Contactless / Apple Pay / Google Pay).
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -729,6 +1005,208 @@ $db = getDB();
       </div>
     </div>
   </footer>
+
+  <!-- =========================================================
+       MODAL 1: PROCESAMIENTO DE LA PASARELA DE PAGOS
+       ========================================================= -->
+  <div id="payment-gateway-modal" class="pay-modal-backdrop">
+    <div class="pay-modal-card">
+      <div class="pay-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: #1a8340; color: #fff; display: flex; align-items: center; justify-content: center;">
+            <span class="material-symbols-outlined" style="font-size: 20px;">lock</span>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-family: var(--font-epilogue); font-size: 1.15rem; font-weight: 800; color: var(--color-on-surface);">
+              Pasarela de Pagos Segura
+            </h3>
+            <span style="font-size: 0.75rem; color: var(--color-on-surface-variant);">
+              AntojoPay • Red Bancaria de Colombia
+            </span>
+          </div>
+        </div>
+        <button onclick="App.closePaymentModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--color-on-surface-variant); cursor: pointer;">✕</button>
+      </div>
+
+      <div class="pay-modal-body">
+        <!-- Resumen de Transacción -->
+        <div style="background: var(--neu-bg); box-shadow: var(--neu-inset-sm); padding: 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--color-on-surface-variant); text-transform: uppercase; font-weight: 700;">Método Seleccionado</div>
+            <div id="gw-modal-method-text" style="font-weight: 800; font-size: 0.95rem; color: var(--color-on-surface);">Tarjeta VISA •••• 4242</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--color-on-surface-variant); text-transform: uppercase; font-weight: 700;">Total a Debitar</div>
+            <div id="gw-modal-amount-text" style="font-family: var(--font-epilogue); font-weight: 900; font-size: 1.35rem; color: #b70011;">$0</div>
+          </div>
+        </div>
+
+        <!-- Pasos interactivos animados de la pasarela -->
+        <div class="gateway-steps">
+          <div id="gw-step-1" class="gateway-step-row active">
+            <div class="gateway-step-icon">
+              <span class="material-symbols-outlined">wifi_tethering</span>
+            </div>
+            <div>
+              <div style="font-weight: 700;">1. Conectando de forma segura</div>
+              <div style="font-size: 0.78rem;">Estableciendo canal cifrado SSL con la entidad bancaria...</div>
+            </div>
+          </div>
+
+          <div id="gw-step-2" class="gateway-step-row">
+            <div class="gateway-step-icon">
+              <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div>
+              <div style="font-weight: 700;">2. Validación de fondos y 3D Secure / OTP</div>
+              <div style="font-size: 0.78rem;">Verificando autorización con el emisor bancario...</div>
+            </div>
+          </div>
+
+          <div id="gw-step-3" class="gateway-step-row">
+            <div class="gateway-step-icon">
+              <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div>
+              <div style="font-weight: 700;">3. Aprobación y comanda digital</div>
+              <div style="font-size: 0.78rem;">Generando comprobante oficial y enviando pedido a cocina...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="gateway-progress-track">
+          <div id="gw-progress-bar" class="gateway-progress-fill"></div>
+        </div>
+
+        <div id="gw-status-message" style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem; font-weight: 700; color: #855300;">
+          Procesando pago con la red bancaria de Neiva...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: COMPROBANTE OFICIAL DE PAGO Y FACTURA ELECTRÓNICA
+       ========================================================= -->
+  <div id="payment-receipt-modal" class="pay-modal-backdrop">
+    <div class="pay-modal-card" style="max-width: 620px;">
+      <div class="pay-modal-header no-print">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span class="material-symbols-outlined" style="color: #00682e; font-size: 28px;">verified</span>
+          <div>
+            <h3 style="margin: 0; font-family: var(--font-epilogue); font-size: 1.15rem; font-weight: 900; color: var(--color-on-surface);">
+              ¡Transacción Aprobada Exitosamente!
+            </h3>
+            <span style="font-size: 0.75rem; color: #00682e; font-weight: 800;">
+              Comprobante Oficial de Pago & Factura Electrónica
+            </span>
+          </div>
+        </div>
+        <button onclick="App.closeReceiptModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--color-on-surface-variant); cursor: pointer;">✕</button>
+      </div>
+
+      <div class="pay-modal-body" style="padding: 1.5rem;">
+        <div id="printable-receipt" class="receipt-voucher-card">
+          <!-- Encabezado del Recibo -->
+          <div class="receipt-header-row">
+            <div>
+              <h2 style="margin: 0; font-family: var(--font-epilogue); font-size: 1.25rem; font-weight: 900; color: #b70011;">
+                ANTOJO VIRTUAL
+              </h2>
+              <div style="font-size: 0.75rem; color: #64748b;">
+                NIT: 901.458.921-4 • Neiva, Huila<br>
+                Régimen Simple de Tributación • Impoconsumo 8%
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="receipt-success-badge">
+                <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+                <span>Aprobada</span>
+              </div>
+              <div id="receipt-inv-number" style="font-size: 0.8rem; font-weight: 800; color: #0f172a; margin-top: 4px;">
+                FE-ANTOJO-2026-00001
+              </div>
+            </div>
+          </div>
+
+          <!-- Grilla de Información Técnica -->
+          <div class="receipt-info-grid">
+            <div>
+              <div class="receipt-info-label">Referencia de Pago</div>
+              <div id="receipt-ref-code" class="receipt-info-value">PAY-NV-20261021-8492</div>
+            </div>
+            <div>
+              <div class="receipt-info-label">Código Autorización</div>
+              <div id="receipt-auth-code" class="receipt-info-value">AUT-948123</div>
+            </div>
+            <div>
+              <div class="receipt-info-label">Método / Banco</div>
+              <div id="receipt-method-label" class="receipt-info-value">Bancolombia S.A. (PSE)</div>
+            </div>
+            <div>
+              <div class="receipt-info-label">Fecha & Hora</div>
+              <div id="receipt-datetime" class="receipt-info-value">2026-10-21 21:52</div>
+            </div>
+            <div>
+              <div class="receipt-info-label">Cliente / Adquirente</div>
+              <div id="receipt-customer-name" class="receipt-info-value">Mateo Rodríguez</div>
+            </div>
+            <div>
+              <div class="receipt-info-label">Documento Identidad</div>
+              <div id="receipt-customer-doc" class="receipt-info-value">CC 1075304128</div>
+            </div>
+          </div>
+
+          <!-- Desglose de Valores -->
+          <div class="receipt-totals-table">
+            <div class="receipt-total-line">
+              <span>Subtotal Productos</span>
+              <strong id="receipt-subtotal">$0</strong>
+            </div>
+            <div id="receipt-discount-row" class="receipt-total-line" style="color: #15803d; display: none;">
+              <span>Descuento Cupón</span>
+              <strong id="receipt-discount">-$0</strong>
+            </div>
+            <div class="receipt-total-line">
+              <span>Impuesto Nacional al Consumo (8%)</span>
+              <strong id="receipt-tax">$0</strong>
+            </div>
+            <div class="receipt-total-line">
+              <span>Servicio de Domicilio en Neiva</span>
+              <strong id="receipt-delivery">$3.500</strong>
+            </div>
+            <div class="receipt-total-line">
+              <span>Propina Repartidor</span>
+              <strong id="receipt-tip">$1.000</strong>
+            </div>
+            <div class="receipt-total-line final">
+              <span>TOTAL PAGADO</span>
+              <span id="receipt-total" style="color: #b70011;">$0</span>
+            </div>
+          </div>
+
+          <!-- CUFE DIAN -->
+          <div class="receipt-cufe-box">
+            <div style="font-weight: 800; margin-bottom: 2px;">CUFE (Código Único de Facturación Electrónica DIAN):</div>
+            <div id="receipt-cufe-code">8f89c4501b87a9d04ef124803923a1e948c27940182390abcef182903810293849102839401829384910293849102938</div>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="no-print" style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end;">
+          <button onclick="window.print()" class="btn-customize" style="background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); color: var(--color-on-surface);">
+            <span class="material-symbols-outlined" style="font-size: 18px;">print</span>
+            <span>Imprimir Recibo</span>
+          </button>
+          <button onclick="App.goToTrackingAfterPayment()" class="btn-customize" style="background: var(--color-primary-neu); color: #ffffff; box-shadow: var(--color-primary-neu-shadow);">
+            <span class="material-symbols-outlined" style="font-size: 18px;">moped</span>
+            <span>Ver Rastreo en Vivo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts: Auth (JWT) carga primero, App después -->
   <script src="assets/js/auth.js"></script>

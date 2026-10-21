@@ -627,45 +627,155 @@ const App = {
     this.showToast('Cupón promocional removido');
   },
 
-  // Confirmar Pedido y Enviar a MySQL
+  // Confirmar Pedido y Procesar en la Pasarela de Pagos Multibanco
   async submitOrder() {
     if (this.state.cart.length === 0) {
       this.showToast('Agrega productos al carrito antes de confirmar.');
       return;
     }
 
-    // Pre-rellenar con datos del usuario autenticado si está logueado
     const authUser = (typeof Auth !== 'undefined' && Auth.isAuthenticated()) ? Auth.getUser() : null;
 
     const customerName    = document.getElementById('customer-name')?.value    || authUser?.name    || 'Mateo Rodríguez';
     const customerPhone   = document.getElementById('customer-phone')?.value   || authUser?.phone   || '+57 314 289 9012';
+    const customerEmail   = document.getElementById('pse-email')?.value        || authUser?.email   || 'mateo@gmail.com';
     const deliveryAddress = document.getElementById('delivery-address')?.value || authUser?.address || 'Cra. 5 #18-42, Centro';
     const comuna          = document.getElementById('delivery-comuna')?.value  || authUser?.comuna  || this.state.selectedComuna;
     const instructions    = document.getElementById('delivery-instructions')?.value || '';
-    const paymentMethod   = document.querySelector('.pay-card.active')?.dataset.method || 'nequi';
+    const paymentMethod   = document.querySelector('.pay-card.active')?.dataset.method || 'card';
     const cashChange      = document.getElementById('cash-change-select')?.value || 'exacto';
+
+    // Recolectar datos técnicos del método seleccionado
+    const paymentData = {
+      method: paymentMethod
+    };
+
+    if (paymentMethod === 'card') {
+      const rawCard = (document.getElementById('card-input-number')?.value || '4000 1234 5678 4242').replace(/\s+/g, '');
+      paymentData.card_number = rawCard;
+      paymentData.card_last_four = rawCard.slice(-4) || '4242';
+      paymentData.cardholder_name = document.getElementById('card-input-name')?.value || 'MATEO RODRÍGUEZ';
+      paymentData.exp_date = document.getElementById('card-input-exp')?.value || '12/28';
+      paymentData.installments = parseInt(document.getElementById('card-input-installments')?.value || '1', 10);
+      paymentData.card_brand = this.detectCardBrand(rawCard);
+      paymentData.save_card = document.getElementById('card-save-checkbox')?.checked || false;
+    } else if (paymentMethod === 'pse') {
+      const bankSelect = document.getElementById('pse-bank-select');
+      paymentData.bank_id = parseInt(bankSelect?.value || '1', 10);
+      paymentData.bank_name = bankSelect?.options[bankSelect.selectedIndex]?.text || 'Bancolombia S.A.';
+      paymentData.payer_person_type = document.querySelector('input[name="pse_person_type"]:checked')?.value || 'natural';
+      paymentData.payer_doc_type = document.getElementById('pse-doc-type')?.value || 'CC';
+      paymentData.payer_doc_number = document.getElementById('pse-doc-number')?.value || '1075304128';
+      paymentData.payer_email = customerEmail;
+    } else if (paymentMethod === 'nequi') {
+      paymentData.phone_number = document.getElementById('nequi-phone-input')?.value || customerPhone;
+      paymentData.bank_name = 'Nequi (Bancolombia)';
+    } else if (paymentMethod === 'daviplata') {
+      paymentData.phone_number = document.getElementById('daviplata-phone-input')?.value || customerPhone;
+      paymentData.payer_doc_number = document.getElementById('daviplata-doc-input')?.value || '1075304128';
+      paymentData.bank_name = 'Daviplata (Davivienda)';
+    } else if (paymentMethod === 'cash_efectivo') {
+      paymentData.cash_change_for = cashChange;
+      paymentData.bank_name = 'Efectivo contra Entrega';
+    } else if (paymentMethod === 'cash_datafono') {
+      paymentData.bank_name = 'Datáfono inalámbrico en sitio';
+    }
 
     const payload = {
       customer_name:    customerName,
       customer_phone:   customerPhone,
+      customer_email:   customerEmail,
       delivery_address: deliveryAddress,
       comuna:           comuna,
       delivery_timing:  'immediate',
       instructions:     instructions,
       payment_method:   paymentMethod,
       cash_change_for:  cashChange,
+      payment_data:     paymentData,
       coupon_code:      this.state.appliedCoupon?.code || '',
       items:            this.state.cart
     };
 
+    // Si es pago online o con billetera, abrimos la pasarela de pagos animada
+    if (['card', 'pse', 'nequi', 'daviplata'].includes(paymentMethod)) {
+      this.openPaymentGatewaySimulation(payload, paymentData);
+    } else {
+      // Contra entrega procesa directo
+      await this.executeOrderPlacement(payload, null);
+    }
+  },
+
+  // Simulación Interactiva de la Pasarela Bancaria
+  openPaymentGatewaySimulation(payload, paymentData) {
+    const modal = document.getElementById('payment-gateway-modal');
+    if (!modal) return;
+
+    const totalEl = document.getElementById('summary-total');
+    const totalText = totalEl ? totalEl.textContent : '$0';
+
+    let methodLabel = 'Tarjeta VISA •••• ' + (paymentData.card_last_four || '4242');
+    if (paymentData.method === 'pse') {
+      methodLabel = 'PSE - ' + (paymentData.bank_name || 'Bancolombia');
+    } else if (paymentData.method === 'nequi') {
+      methodLabel = 'Nequi Directo (' + (paymentData.phone_number || '') + ')';
+    } else if (paymentData.method === 'daviplata') {
+      methodLabel = 'Daviplata (' + (paymentData.phone_number || '') + ')';
+    }
+
+    document.getElementById('gw-modal-method-text').textContent = methodLabel;
+    document.getElementById('gw-modal-amount-text').textContent = totalText;
+
+    // Resetear estados del stepper
+    const step1 = document.getElementById('gw-step-1');
+    const step2 = document.getElementById('gw-step-2');
+    const step3 = document.getElementById('gw-step-3');
+    const bar = document.getElementById('gw-progress-bar');
+    const statusMsg = document.getElementById('gw-status-message');
+
+    step1.className = 'gateway-step-row active';
+    step2.className = 'gateway-step-row';
+    step3.className = 'gateway-step-row';
+    bar.style.width = '20%';
+    statusMsg.textContent = 'Conectando con la red bancaria segura...';
+
+    modal.classList.add('open');
+
+    // Secuencia de animación de la pasarela
+    setTimeout(() => {
+      step1.className = 'gateway-step-row done';
+      step2.className = 'gateway-step-row active';
+      bar.style.width = '65%';
+      statusMsg.textContent = 'Validando fondos y seguridad 3D Secure / OTP...';
+
+      setTimeout(async () => {
+        step2.className = 'gateway-step-row done';
+        step3.className = 'gateway-step-row active';
+        bar.style.width = '95%';
+        statusMsg.textContent = 'Transacción autorizada. Guardando comanda y factura...';
+
+        // Ejecutar envío real a la API PHP y Base de Datos MySQL
+        await this.executeOrderPlacement(payload, () => {
+          step3.className = 'gateway-step-row done';
+          bar.style.width = '100%';
+          statusMsg.textContent = '¡Pago Aprobado con Éxito!';
+          setTimeout(() => {
+            this.closePaymentModal();
+          }, 600);
+        });
+
+      }, 1000);
+    }, 900);
+  },
+
+  // Ejecución del POST hacia la API
+  async executeOrderPlacement(payload, onBeforeFinish) {
     const confirmBtn = document.getElementById('btn-confirm-order-action');
     if (confirmBtn) {
       confirmBtn.disabled = true;
-      confirmBtn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> Guardando en MySQL...';
+      confirmBtn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> Procesando con MySQL...';
     }
 
     try {
-      // Usar Auth.fetch para incluir el JWT automáticamente
       const fetcher = (typeof Auth !== 'undefined') ? Auth.fetch.bind(Auth) : fetch;
       const res = await fetcher('api/orders.php', {
         method: 'POST',
@@ -675,31 +785,110 @@ const App = {
       const data = await res.json();
 
       if (data.success) {
-        this.showToast('¡Pedido guardado en MySQL con éxito! Conectando con repartidor...');
-        
-        localStorage.setItem('antojo_active_order_code', data.order_code);
+        if (typeof onBeforeFinish === 'function') {
+          onBeforeFinish();
+        }
 
+        localStorage.setItem('antojo_active_order_code', data.order_code);
         this.state.cart = [];
         this.saveCartToStorage();
         this.renderCartBadge();
 
+        // Mostrar recibo oficial y factura electrónica
         setTimeout(() => {
-          this.fetchOrderForTracking(data.order_code, true);
-        }, 800);
+          this.showPaymentReceipt(data);
+        }, 350);
+
       } else {
-        this.showToast(data.message || 'Error al procesar el pedido');
-        if (confirmBtn) {
-          confirmBtn.disabled = false;
-          confirmBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar Pedido';
-        }
+        this.closePaymentModal();
+        this.showToast(data.message || 'Transacción rechazada por el banco');
       }
     } catch (err) {
-      this.showToast('Error de conexión con el backend PHP');
+      this.closePaymentModal();
+      this.showToast('Error de comunicación con la pasarela de pagos');
+    } finally {
       if (confirmBtn) {
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar Pedido';
       }
     }
+  },
+
+  closePaymentModal() {
+    const modal = document.getElementById('payment-gateway-modal');
+    if (modal) modal.classList.remove('open');
+  },
+
+  // Mostrar el comprobante oficial de pago y factura electrónica
+  showPaymentReceipt(orderResult) {
+    const receiptModal = document.getElementById('payment-receipt-modal');
+    if (!receiptModal) return;
+
+    const p = orderResult.payment || {};
+    const inv = orderResult.invoice || {};
+
+    const customerName = document.getElementById('customer-name')?.value || 'Mateo Rodríguez';
+    const docType = document.getElementById('pse-doc-type')?.value || 'CC';
+    const docNum = document.getElementById('pse-doc-number')?.value || '1075304128';
+
+    document.getElementById('receipt-inv-number').textContent = inv.invoice_number || 'FE-ANTOJO-2026-00001';
+    document.getElementById('receipt-ref-code').textContent = p.transaction_reference || 'PAY-NV-' + Date.now();
+    document.getElementById('receipt-auth-code').textContent = p.authorization_code || 'AUT-' + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('receipt-method-label').textContent = p.method_label || 'Bancolombia S.A. (PSE)';
+    
+    const now = new Date();
+    document.getElementById('receipt-datetime').textContent = now.toLocaleDateString('es-CO') + ' ' + now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('receipt-customer-name').textContent = customerName;
+    document.getElementById('receipt-customer-doc').textContent = `${docType} ${docNum}`;
+
+    const subtotalText = document.getElementById('summary-subtotal')?.textContent || '$0';
+    const deliveryText = document.getElementById('summary-delivery')?.textContent || '$3.500';
+    const tipText = document.getElementById('summary-tip')?.textContent || '$1.000';
+    const discountText = document.getElementById('summary-discount')?.textContent || '$0';
+
+    document.getElementById('receipt-subtotal').textContent = subtotalText;
+    document.getElementById('receipt-delivery').textContent = deliveryText;
+    document.getElementById('receipt-tip').textContent = tipText;
+    document.getElementById('receipt-total').textContent = orderResult.total_formatted || '$0';
+
+    // Impoconsumo 8%
+    const rawTotal = orderResult.total || 0;
+    const taxApprox = Math.round(rawTotal * 0.08 / 1.08);
+    document.getElementById('receipt-tax').textContent = '$' + taxApprox.toLocaleString('es-CO');
+
+    if (this.state.appliedCoupon) {
+      document.getElementById('receipt-discount-row').style.display = 'flex';
+      document.getElementById('receipt-discount').textContent = discountText;
+    } else {
+      document.getElementById('receipt-discount-row').style.display = 'none';
+    }
+
+    if (inv.cufe_code) {
+      document.getElementById('receipt-cufe-code').textContent = inv.cufe_code;
+    }
+
+    receiptModal.classList.add('open');
+  },
+
+  closeReceiptModal() {
+    const modal = document.getElementById('payment-receipt-modal');
+    if (modal) modal.classList.remove('open');
+  },
+
+  goToTrackingAfterPayment() {
+    this.closeReceiptModal();
+    const savedOrderCode = localStorage.getItem('antojo_active_order_code') || '#NV-8492';
+    this.fetchOrderForTracking(savedOrderCode, true);
+  },
+
+  // Detección automática de franquicia de tarjeta
+  detectCardBrand(num) {
+    const clean = (num || '').replace(/\D/g, '');
+    if (/^4/.test(clean)) return 'visa';
+    if (/^(5[1-5]|2[2-7])/.test(clean)) return 'mastercard';
+    if (/^(34|37)/.test(clean)) return 'amex';
+    if (/^(30[0-5]|36|38)/.test(clean)) return 'diners';
+    return 'visa';
   },
 
   // Rastreo en Vivo (Live Tracking)
@@ -963,7 +1152,168 @@ const App = {
     }, 3500);
   },
 
-  // Configuración de listeners
+  // Consulta dinámica de bancos colombianos para la lista PSE
+  async fetchBanksForPSE() {
+    try {
+      const res = await fetch('api/payments.php?banks=1');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.banks)) {
+        const select = document.getElementById('pse-bank-select');
+        if (!select) return;
+
+        const traditional = data.banks.filter(b => b.type === 'bank');
+        const neobanks = data.banks.filter(b => b.type !== 'bank');
+
+        select.innerHTML = `
+          <optgroup label="Bancos Tradicionales">
+            ${traditional.map(b => `<option value="${b.id}" ${b.code === 'BANCOLOMBIA' ? 'selected' : ''}>${b.name}</option>`).join('')}
+          </optgroup>
+          <optgroup label="Neobancos y Billeteras Digitales">
+            ${neobanks.map(b => `<option value="${b.id}">${b.name}</option>`).join('')}
+          </optgroup>
+        `;
+      }
+    } catch (e) {
+      console.warn('Usando lista de bancos colombianos precargada en el HTML.');
+    }
+  },
+
+  // Inicialización de interacciones de la pasarela y tarjeta 3D
+  setupPaymentGatewayInteractions() {
+    // 1. Selector de métodos de pago
+    document.querySelectorAll('.pay-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+
+        const method = card.dataset.method;
+        document.querySelectorAll('.gateway-panel').forEach(p => p.style.display = 'none');
+
+        const targetPanel = document.getElementById(`gateway-panel-${method}`);
+        if (targetPanel) {
+          targetPanel.style.display = 'block';
+        }
+
+        this.updateInstallmentsCalculation();
+      });
+    });
+
+    // 2. Formateo y Brand Detection en Vivo para Tarjetas
+    const cardNumInput = document.getElementById('card-input-number');
+    const cardNumDisplay = document.getElementById('card-number-display');
+    const cardBrandDisplay = document.getElementById('card-brand-display');
+    const cardBrandIcon = document.getElementById('card-input-brand-icon');
+
+    if (cardNumInput) {
+      cardNumInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+        let formatted = val.match(/.{1,4}/g)?.join(' ') || val;
+        e.target.value = formatted;
+
+        // Visual preview
+        if (cardNumDisplay) {
+          cardNumDisplay.textContent = formatted.length > 0 ? formatted : '•••• •••• •••• 4242';
+        }
+
+        // Brand detection
+        const brand = this.detectCardBrand(val);
+        if (cardBrandDisplay) {
+          cardBrandDisplay.className = `neu-card-brand-badge ${brand}`;
+          cardBrandDisplay.innerHTML = `<span>${brand.toUpperCase()}</span>`;
+        }
+        if (cardBrandIcon) {
+          cardBrandIcon.textContent = (brand === 'visa' || brand === 'mastercard') ? 'credit_card' : 'payments';
+        }
+      });
+    }
+
+    // 3. Nombre del Titular
+    const cardNameInput = document.getElementById('card-input-name');
+    const cardNameDisplay = document.getElementById('card-holder-display');
+    if (cardNameInput && cardNameDisplay) {
+      cardNameInput.addEventListener('input', (e) => {
+        const val = e.target.value.toUpperCase();
+        cardNameDisplay.textContent = val || 'MATEO RODRÍGUEZ';
+      });
+    }
+
+    // 4. Fecha de Expiración
+    const cardExpInput = document.getElementById('card-input-exp');
+    const cardExpDisplay = document.getElementById('card-exp-display');
+    if (cardExpInput && cardExpDisplay) {
+      cardExpInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+        if (val.length >= 3) {
+          val = val.substring(0, 2) + '/' + val.substring(2, 4);
+        }
+        e.target.value = val;
+        cardExpDisplay.textContent = val || '12/28';
+      });
+    }
+
+    // 5. Selector de Cuotas
+    const installmentsSelect = document.getElementById('card-input-installments');
+    if (installmentsSelect) {
+      installmentsSelect.addEventListener('change', () => {
+        this.updateInstallmentsCalculation();
+      });
+    }
+
+    // 6. Selector de Cambio en Efectivo
+    const cashSelect = document.getElementById('cash-change-select');
+    if (cashSelect) {
+      cashSelect.addEventListener('change', () => {
+        this.updateCashChangeCalculation();
+      });
+    }
+
+    this.updateInstallmentsCalculation();
+    this.updateCashChangeCalculation();
+  },
+
+  // Cálculo del valor de cada cuota bancaria
+  updateInstallmentsCalculation() {
+    const installmentsEl = document.getElementById('card-input-installments');
+    const calcEl = document.getElementById('card-installment-amount');
+    if (!installmentsEl || !calcEl) return;
+
+    const n = parseInt(installmentsEl.value || '1', 10);
+    const totalEl = document.getElementById('summary-total');
+    let totalNum = 0;
+    if (totalEl) {
+      totalNum = parseInt(totalEl.textContent.replace(/\D/g, '') || '0', 10);
+    }
+
+    if (totalNum <= 0) totalNum = 40400;
+
+    const perInstallment = Math.round(totalNum / n);
+    calcEl.textContent = `$${perInstallment.toLocaleString('es-CO')} COP / mes`;
+  },
+
+  // Cálculo de cambio en efectivo
+  updateCashChangeCalculation() {
+    const cashSelect = document.getElementById('cash-change-select');
+    const calcEl = document.getElementById('cash-change-calc');
+    if (!cashSelect || !calcEl) return;
+
+    const val = cashSelect.value;
+    const totalEl = document.getElementById('summary-total');
+    let totalNum = 0;
+    if (totalEl) {
+      totalNum = parseInt(totalEl.textContent.replace(/\D/g, '') || '0', 10);
+    }
+    if (totalNum <= 0) totalNum = 40400;
+
+    if (val === 'exacto') {
+      calcEl.textContent = 'Pago exacto acordado. El repartidor no llevará cambio adicional.';
+    } else {
+      const bill = parseInt(val, 10);
+      const change = Math.max(0, bill - totalNum);
+      calcEl.textContent = `Pagas con billete de $${bill.toLocaleString('es-CO')}. El repartidor te entregará $${change.toLocaleString('es-CO')} COP de cambio.`;
+    }
+  },
+
+  // Configuración de listeners generales
   setupEventListeners() {
     const searchInput = document.getElementById('search-input');
     let debounceTimer;
@@ -986,19 +1336,6 @@ const App = {
       });
     }
 
-    document.querySelectorAll('.pay-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-
-        const isCash = card.dataset.method === 'cash_efectivo';
-        const cashBox = document.getElementById('cash-change-box');
-        if (cashBox) {
-          cashBox.style.display = isCash ? 'block' : 'none';
-        }
-      });
-    });
-
     const copyBtn = document.getElementById('btn-hero-copy-coupon');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
@@ -1010,6 +1347,10 @@ const App = {
         this.showToast('¡Cupón ANTOJONEIVA5K copiado y aplicado (-$5.000 COP)!');
       });
     }
+
+    // Inicializar pasarela de pagos
+    this.setupPaymentGatewayInteractions();
+    this.fetchBanksForPSE();
   }
 };
 

@@ -43,12 +43,16 @@ $activeOrders = (int)$db->query("SELECT COUNT(*) FROM `orders` WHERE `status` IN
 $deliveredOrders = (int)$db->query("SELECT COUNT(*) FROM `orders` WHERE `status` = 'entregado'")->fetchColumn();
 $totalRevenue = (int)$db->query("SELECT COALESCE(SUM(total), 0) FROM `orders` WHERE `status` != 'cancelado'")->fetchColumn();
 
-// Consultar lista completa de órdenes con sus ítems
+// Consultar lista completa de órdenes con sus ítems, pagos y facturas
 $stmt = $db->query("
     SELECT o.*, 
-           r.name as rider_name, r.vehicle as rider_vehicle, r.plate as rider_plate
+           r.name as rider_name, r.vehicle as rider_vehicle, r.plate as rider_plate,
+           p.transaction_reference, p.authorization_code, p.bank_name, p.card_brand, p.card_last_four, p.status as p_status,
+           inv.invoice_number, inv.cufe_code
     FROM `orders` o
     LEFT JOIN `riders` r ON o.rider_id = r.id
+    LEFT JOIN `payments` p ON o.id = p.order_id
+    LEFT JOIN `invoices` inv ON o.id = inv.order_id
     ORDER BY o.created_at DESC
     LIMIT 50
 ");
@@ -239,9 +243,35 @@ foreach ($orders as &$ord) {
                   <div style="font-family: var(--font-epilogue); font-size: 1.45rem; font-weight: 900; color: var(--color-on-surface);">
                     $<?php echo number_format($o['total'], 0, ',', '.'); ?>
                   </div>
-                  <div style="font-size: 0.75rem; color: #1a8340; font-weight: 800;">
-                    Pago: <?php echo strtoupper(htmlspecialchars($o['payment_method'])); ?>
+                  <div style="margin-top: 4px;">
+                    <?php if (($o['payment_status'] ?? '') === 'paid' || ($o['p_status'] ?? '') === 'approved'): ?>
+                      <span style="display: inline-flex; align-items: center; gap: 3px; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 800;">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                        PAGADO ONLINE
+                      </span>
+                    <?php else: ?>
+                      <span style="display: inline-flex; align-items: center; gap: 3px; background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 800;">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">hourglass_top</span>
+                        CONTRA ENTREGA
+                      </span>
+                    <?php endif; ?>
                   </div>
+                  <div style="font-size: 0.72rem; color: var(--color-on-surface-variant); font-weight: 700; margin-top: 3px;">
+                    <?php 
+                      $pLabel = $o['bank_name'] ?: ($o['card_brand'] ? strtoupper($o['card_brand']) . ' •••• ' . $o['card_last_four'] : strtoupper($o['payment_method']));
+                      echo htmlspecialchars($pLabel);
+                    ?>
+                  </div>
+                  <?php if (!empty($o['transaction_reference'])): ?>
+                    <div style="font-family: monospace; font-size: 0.68rem; color: #64748b;">
+                      Ref: <?php echo htmlspecialchars($o['transaction_reference']); ?>
+                    </div>
+                  <?php endif; ?>
+                  <?php if (!empty($o['invoice_number'])): ?>
+                    <div style="font-size: 0.68rem; color: #0284c7; font-weight: 800;">
+                      Fac: <?php echo htmlspecialchars($o['invoice_number']); ?>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
 

@@ -82,18 +82,26 @@ try {
         $rider = $stmtR->fetch();
         $riderId = $rider ? (int)$rider['id'] : null;
 
+        $customerEmail = trim($input['customer_email'] ?? ($authUser ? $authUser['email'] : 'cliente@antojo.com'));
+        $paymentData = $input['payment_data'] ?? [];
+        $isCash = in_array($paymentMethod, ['cash_efectivo', 'cash_datafono']);
+        $paymentStatus = $isCash ? 'pending' : 'paid';
+
+        // Calcular impuesto al consumo 8%
+        $taxImpoconsumo = (int)round(($subtotal - $discount) * 0.08);
+
         // Iniciar transacción
         $db->beginTransaction();
 
         $stmtOrder = $db->prepare("
             INSERT INTO `orders` (
-                `user_id`, `order_code`, `customer_name`, `customer_phone`, `delivery_address`, `comuna`,
-                `delivery_timing`, `instructions`, `payment_method`, `cash_change_for`,
-                `subtotal`, `discount`, `delivery_fee`, `tip`, `total`, `status`, `rider_id`
+                `user_id`, `order_code`, `customer_name`, `customer_phone`, `customer_email`, `delivery_address`, `comuna`,
+                `delivery_timing`, `instructions`, `payment_method`, `payment_status`, `cash_change_for`,
+                `subtotal`, `discount`, `delivery_fee`, `tip`, `tax_impoconsumo`, `total`, `status`, `rider_id`
             ) VALUES (
-                :uid, :code, :cname, :cphone, :addr, :comuna,
-                :timing, :instructions, :pmethod, :cchange,
-                :subtotal, :discount, :fee, :tip, :total, 'recibido', :rider_id
+                :uid, :code, :cname, :cphone, :cemail, :addr, :comuna,
+                :timing, :instructions, :pmethod, :pstatus, :cchange,
+                :subtotal, :discount, :fee, :tip, :tax, :total, 'recibido', :rider_id
             )
         ");
 
@@ -102,16 +110,19 @@ try {
             ':code' => $orderCode,
             ':cname' => $customerName,
             ':cphone' => $customerPhone,
+            ':cemail' => $customerEmail,
             ':addr' => $address,
             ':comuna' => $comuna,
             ':timing' => $timing,
             ':instructions' => $instructions,
             ':pmethod' => $paymentMethod,
+            ':pstatus' => $paymentStatus,
             ':cchange' => $cashChangeFor,
             ':subtotal' => $subtotal,
             ':discount' => $discount,
             ':fee' => $deliveryFee,
             ':tip' => $tip,
+            ':tax' => $taxImpoconsumo,
             ':total' => $total,
             ':rider_id' => $riderId
         ]);
@@ -168,14 +179,134 @@ try {
             ]);
         }
 
-        // Insertar evento inicial de rastreo
+        // Registrar transacción de pago en la pasarela
+        $txRef = 'PAY-NV-' . date('Ymd') . '-' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
+        $authCode = 'AUT-' . rand(100000, 999999);
+        $bankName = $paymentData['bank_name'] ?? null;
+        $bankId = !empty($paymentData['bank_id']) ? (int)$paymentData['bank_id'] : null;
+        $cardBrand = $paymentData['card_brand'] ?? null;
+        $cardLastFour = $paymentData['card_last_four'] ?? null;
+        $cardholderName = $paymentData['cardholder_name'] ?? null;
+        $installments = max(1, (int)($paymentData['installments'] ?? 1));
+        $payerDocType = $paymentData['payer_doc_type'] ?? 'CC';
+        $payerDocNumber = $paymentData['payer_doc_number'] ?? '1075304128';
+
+        if ($paymentMethod === 'pse' && empty($bankName)) {
+            $bankName = 'Bancolombia S.A.';
+        } elseif ($paymentMethod === 'nequi') {
+            $bankName = 'Nequi (Bancolombia)';
+        } elseif ($paymentMethod === 'daviplata') {
+            $bankName = 'Daviplata (Davivienda)';
+        } elseif ($paymentMethod === 'cash_efectivo') {
+            $bankName = 'Efectivo contra Entrega';
+        } elseif ($paymentMethod === 'cash_datafono') {
+            $bankName = 'Datáfono contra Entrega';
+        }
+
+        $stmtPay = $db->prepare("
+            INSERT INTO `payments` (
+                `order_id`, `payment_method`, `transaction_reference`, `gateway`, `amount`, `currency`,
+                `status`, `authorization_code`, `bank_id`, `bank_name`,
+                `payer_doc_type`, `payer_doc_number`, `payer_person_type`, `payer_email`, `payer_phone`,
+                `card_brand`, `card_last_four`, `cardholder_name`, `installments`,
+                `gateway_response`, `ip_address`, `paid_at`
+            ) VALUES (
+                :order_id, :pmethod, :tx_ref, 'antojo_pay_gateway', :amount, 'COP',
+                :status, :auth_code, :bank_id, :bank_name,
+                :doc_type, :doc_num, 'natural', :email, :phone,
+                :cbrand, :clast4, :cholder, :installments,
+                :gw_response, :ip, :paid_at
+            )
+        ");
+
+        $payStatus = $isCash ? 'pending' : 'approved';
+        $paidAt = $isCash ? null : date('Y-m-d H:i:s');
+        $gwResponse = json_encode([
+            'status' => strtoupper($payStatus),
+            'ref' => $txRef,
+            'auth' => $authCode,
+            'method' => $paymentMethod,
+            'bank' => $bankName
+        ], JSON_UNESCAPED_UNICODE);
+
+        $stmtPay->execute([
+            ':order_id' => $orderId,
+            ':pmethod' => $paymentMethod,
+            ':tx_ref' => $txRef,
+            ':amount' => $total,
+            ':status' => $payStatus,
+            ':auth_code' => $isCash ? null : $authCode,
+            ':bank_id' => $bankId,
+            ':bank_name' => $bankName,
+            ':doc_type' => $payerDocType,
+            ':doc_num' => $payerDocNumber,
+            ':email' => $customerEmail,
+            ':phone' => $customerPhone,
+            ':cbrand' => $cardBrand,
+            ':clast4' => $cardLastFour,
+            ':cholder' => $cardholderName,
+            ':installments' => $installments,
+            ':gw_response' => $gwResponse,
+            ':ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+            ':paid_at' => $paidAt
+        ]);
+
+        $paymentId = (int)$db->lastInsertId();
+
+        // Generar Factura Electrónica
+        $invoiceNumber = 'FE-ANTOJO-' . date('Y') . '-' . str_pad($orderId, 5, '0', STR_PAD_LEFT);
+        $cufeCode = hash('sha384', $invoiceNumber . date('YmdHis') . $total . $customerName);
+        $methodLabel = $bankName ?: (strtoupper($cardBrand ?? 'TARJETA') . ' •••• ' . ($cardLastFour ?? ''));
+        $qrString = "NumFac={$invoiceNumber}&FecFac=" . date('Y-m-d') . "&NitFac=901458921-4&DocAdq={$payerDocNumber}&ValFac={$total}&CUFE=" . substr($cufeCode, 0, 16);
+
+        $stmtInv = $db->prepare("
+            INSERT INTO `invoices` (
+                `order_id`, `payment_id`, `invoice_number`, `cufe_code`,
+                `customer_name`, `customer_document`, `customer_email`, `customer_phone`, `customer_address`,
+                `subtotal`, `discount`, `tax_impoconsumo`, `delivery_fee`, `tip`, `total`,
+                `payment_method_label`, `transaction_reference`, `qr_string`, `status`
+            ) VALUES (
+                :oid, :pid, :inv_num, :cufe,
+                :cname, :cdoc, :cemail, :cphone, :caddr,
+                :subtotal, :discount, :tax, :fee, :tip, :total,
+                :pmethod_label, :tx_ref, :qr, 'issued'
+            )
+        ");
+
+        $stmtInv->execute([
+            ':oid' => $orderId,
+            ':pid' => $paymentId,
+            ':inv_num' => $invoiceNumber,
+            ':cufe' => $cufeCode,
+            ':cname' => $customerName,
+            ':cdoc' => "{$payerDocType} {$payerDocNumber}",
+            ':cemail' => $customerEmail,
+            ':cphone' => $customerPhone,
+            ':caddr' => "{$address} ({$comuna})",
+            ':subtotal' => $subtotal,
+            ':discount' => $discount,
+            ':tax' => $taxImpoconsumo,
+            ':fee' => $deliveryFee,
+            ':tip' => $tip,
+            ':total' => $total,
+            ':pmethod_label' => $methodLabel,
+            ':tx_ref' => $txRef,
+            ':qr' => $qrString
+        ]);
+
+        // Insertar eventos iniciales de rastreo
+        $paymentTrackingText = $isCash
+            ? "Método de pago seleccionado: {$methodLabel}. Cobro contra entrega en Neiva."
+            : "Pago verificado y aprobado vía {$methodLabel}. Ref: {$txRef}. Aprobación: {$authCode}.";
+
         $stmtEvent = $db->prepare("
             INSERT INTO `order_tracking_events` (`order_id`, `status`, `title`, `description`)
-            VALUES (:oid, 'recibido', 'Orden Recibida y Confirmada', :desc)
+            VALUES (:oid, 'recibido', :title, :desc)
         ");
         $stmtEvent->execute([
             ':oid' => $orderId,
-            ':desc' => "¡Listo! Tu pedido {$orderCode} fue confirmado por {$mainRestaurant} en Neiva. Estamos alistando los ingredientes frescos."
+            ':title' => 'Orden y Pago Registrados',
+            ':desc' => "{$paymentTrackingText} {$mainRestaurant} está alistando los ingredientes frescos."
         ]);
 
         $db->commit();
@@ -188,6 +319,19 @@ try {
             'user_id' => $userId,
             'total' => $total,
             'total_formatted' => '$' . number_format($total, 0, ',', '.'),
+            'payment_status' => $paymentStatus,
+            'payment' => [
+                'id' => $paymentId,
+                'transaction_reference' => $txRef,
+                'authorization_code' => $authCode,
+                'payment_method' => $paymentMethod,
+                'method_label' => $methodLabel,
+                'status' => $payStatus
+            ],
+            'invoice' => [
+                'invoice_number' => $invoiceNumber,
+                'cufe_code' => $cufeCode
+            ],
             'status' => 'recibido'
         ]);
 

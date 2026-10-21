@@ -35,7 +35,13 @@ try {
     $db = getDB();
     $dbStatus = true;
     
-    $tables = ['restaurants', 'menu_items', 'item_options', 'categories', 'coupons', 'riders', 'orders', 'order_items', 'order_tracking_events'];
+    $tables = [
+        'restaurants', 'menu_items', 'item_options', 'categories', 'coupons', 
+        'riders', 'orders', 'order_items', 'order_tracking_events',
+        'banks', 'payment_methods', 'payments', 'invoices',
+        'users', 'user_addresses', 'user_saved_cards', 'jwt_refresh_tokens', 'jwt_blacklist',
+        'reviews', 'comunas'
+    ];
     foreach ($tables as $t) {
         try {
             $count = (int)$db->query("SELECT COUNT(*) FROM `{$t}`")->fetchColumn();
@@ -48,6 +54,8 @@ try {
     $totalRestaurants = $tablesInfo['restaurants'] ?? 0;
     $totalDishes = $tablesInfo['menu_items'] ?? 0;
     $totalOrders = $tablesInfo['orders'] ?? 0;
+    $totalPayments = $tablesInfo['payments'] ?? 0;
+    $totalBanks = $tablesInfo['banks'] ?? 0;
 
 } catch (Exception $e) {
     $dbStatus = false;
