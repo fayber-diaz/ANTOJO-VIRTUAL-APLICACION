@@ -85,3 +85,4 @@ INSERT INTO `neiva_route_waypoints` (`comuna_code`, `step_order`, `lat`, `lng`, 
 ('comuna_7', 2, 2.929500, -75.276500, 'Avenida La Toma Oriental (Cra 16)', 'Estadio Plazas Alcid', 35),
 ('comuna_7', 3, 2.927500, -75.269500, 'Calle 16 con Carrera 28, Las Brisas', 'Subida a Ipanema', 33),
 ('comuna_7', 4, 2.925000, -75.263000, 'Barrio Ipanema Reservado (Comuna 7)', 'Dirección de Entrega', 0);
+

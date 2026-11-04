@@ -825,4 +825,137 @@
   box-shadow: 3px 3px 8px rgba(220, 38, 38, 0.35) !important;
 }
 
+/* =========================================================
+   ADAPTACIÓN RESPONSIVA DE PASARELA DE PAGOS, FACTURA Y MAPA GPS
+   ========================================================= */
+
+@media (min-width: 1536px) {
+  #neiva-interactive-map {
+    height: 480px;
+  }
+}
+
+@media (max-width: 768px) {
+  .gateway-container {
+    padding: 1rem;
+  }
+  .track-search-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.15rem;
+  }
+  .track-search-input-wrapper {
+    max-width: 100%;
+    width: 100%;
+  }
+  /* En pantallas móviles el HUD se acopla arriba del mapa sin tapar las calles */
+  .tracking-hud-overlay {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    padding: 0.7rem 0.85rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.55rem;
+  }
+  #neiva-interactive-map {
+    height: 340px;
+  }
+  .map-floating-controls {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.35rem;
+  }
+  .map-control-btn {
+    padding: 0.42rem 0.65rem;
+    font-size: 0.72rem;
+  }
+  .pay-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .pay-modal-card {
+    max-width: 100% !important;
+    max-height: 92vh;
+    max-height: 92dvh;
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+  }
+  .pay-modal-header {
+    padding: 1.15rem 1.25rem 0.85rem 1.25rem;
+  }
+  .pay-modal-body {
+    padding: 1.15rem 1.25rem 1.5rem 1.25rem;
+  }
+  .receipt-voucher-card {
+    padding: 1.15rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .neu-card-preview {
+    height: 185px;
+    padding: 1.1rem 1.2rem;
+  }
+  .neu-card-number {
+    font-size: 1.08rem;
+    letter-spacing: 1.8px;
+  }
+  .neu-card-holder-name {
+    max-width: 145px;
+    font-size: 0.76rem;
+  }
+  .card-form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .card-form-full {
+    grid-column: span 1;
+  }
+  .pse-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+  }
+  .qr-simulator-box {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  .tracking-hud-overlay {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
+  }
+  #neiva-interactive-map {
+    height: 300px;
+  }
+  .receipt-header-row {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .receipt-header-row > div:last-child {
+    text-align: left !important;
+  }
+  .receipt-info-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .tracking-timeline-box {
+    padding: 1rem;
+  }
+  .timeline-event-item {
+    padding-left: 1.5rem;
+  }
+}
+
 

@@ -66,6 +66,7 @@ public class RiderViewHandler implements HttpHandler {
             sb.append(".rider-card { padding: 20px; border-radius: 22px; background: var(--neu-bg); box-shadow: var(--neu-extruded); border:1px solid var(--color-border-subtle); margin-bottom: 18px; }");
             sb.append(".rider-pill { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; font-size:0.78rem; font-weight:800; background:rgba(16,185,129,0.16); color:#059669; }");
             sb.append(".action-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }");
+            sb.append("@media (max-width: 540px) { .action-grid { grid-template-columns: 1fr; } .rider-card { padding: 14px; border-radius: 16px; } .rider-shell { padding: 0 10px; } }");
             sb.append("</style></head><body><div class=\"rider-shell\">");
 
             sb.append("<div class=\"rider-card\" style=\"display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;\"><div>");

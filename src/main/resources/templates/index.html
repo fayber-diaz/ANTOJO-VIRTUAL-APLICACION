@@ -309,27 +309,27 @@
        ========================================================= -->
   <section id="screen-checkout" class="container checkout-view" style="display: none;">
     <!-- Stepper Neumórfico de Progreso -->
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding: 1.25rem 1.75rem; background: var(--neu-bg); border-radius: var(--radius-lg); box-shadow: var(--neu-extruded); border: 1px solid var(--color-border-subtle);">
-      <div style="display: flex; align-items: center; gap: 0.75rem; color: #1a8340;">
+    <div class="checkout-stepper-bar">
+      <div class="checkout-stepper-item" style="display: flex; align-items: center; gap: 0.75rem; color: #1a8340;">
         <span class="material-symbols-outlined" style="font-size: 28px;">check_circle</span>
         <div>
           <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 900;">Paso 1</div>
           <div style="font-weight: 800; font-size: 0.95rem;">Carrito & Toppings</div>
         </div>
       </div>
-      <div style="flex: 1; height: 6px; background: var(--neu-bg); box-shadow: var(--neu-inset-sm); margin: 0 1.5rem; border-radius: 9999px;">
+      <div class="checkout-stepper-line">
         <div style="width: 100%; height: 100%; background: #1a8340; border-radius: 9999px;"></div>
       </div>
-      <div style="display: flex; align-items: center; gap: 0.75rem; color: #dc2626;">
-        <div style="width: 36px; height: 36px; border-radius: 9999px; background: var(--color-primary-neu); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: var(--color-primary-neu-shadow);">2</div>
+      <div class="checkout-stepper-item" style="display: flex; align-items: center; gap: 0.75rem; color: #dc2626;">
+        <div style="width: 36px; height: 36px; border-radius: 9999px; background: var(--color-primary-neu); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: var(--color-primary-neu-shadow); flex-shrink: 0;">2</div>
         <div>
           <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 900;">Paso 2 (Activo)</div>
           <div style="font-weight: 800; font-size: 0.95rem;">Entrega & Pago</div>
         </div>
       </div>
-      <div style="flex: 1; height: 6px; background: var(--neu-bg); box-shadow: var(--neu-inset-sm); margin: 0 1.5rem; border-radius: 9999px;"></div>
-      <div style="display: flex; align-items: center; gap: 0.75rem; opacity: 0.6;">
-        <div style="width: 36px; height: 36px; border-radius: 9999px; background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); color: var(--color-on-surface-variant); display: flex; align-items: center; justify-content: center; font-weight: 800;">3</div>
+      <div class="checkout-stepper-line"></div>
+      <div class="checkout-stepper-item" style="display: flex; align-items: center; gap: 0.75rem; opacity: 0.6;">
+        <div style="width: 36px; height: 36px; border-radius: 9999px; background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); color: var(--color-on-surface-variant); display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;">3</div>
         <div>
           <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800;">Paso 3</div>
           <div style="font-weight: 800; font-size: 0.95rem;">Rastreo en Vivo</div>
@@ -366,7 +366,7 @@
             <label class="form-label">Nombre de quien recibe</label>
             <input type="text" id="customer-name" class="form-input" value="Mateo Rodríguez">
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-row-2col">
             <div class="form-group">
               <label class="form-label">Teléfono Móvil (WhatsApp)</label>
               <input type="tel" id="customer-phone" class="form-input" value="+57 314 289 9012">
@@ -815,10 +815,10 @@
       </div>
     </div>
 
-    <div style="background: var(--neu-bg); border-radius: var(--radius-lg); box-shadow: var(--neu-extruded-lg); border: 1px solid var(--color-border-subtle); padding: 2.25rem;">
+    <div class="tracking-master-card">
       
       <!-- Encabezado del Pedido -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 1.75rem;">
+      <div class="tracking-header-bar">
         <div>
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
             <span class="material-symbols-outlined" style="color: #dc2626;">moped</span>
@@ -826,7 +826,7 @@
               Telemetría & GPS en Tiempo Real
             </span>
           </div>
-          <h2 style="font-family: var(--font-epilogue); font-size: 1.95rem; font-weight: 900; color: var(--color-on-surface); margin: 0;">
+          <h2 class="tracking-order-heading">
             Pedido <span id="track-order-code" style="color: #dc2626;">#NV-8492</span>
           </h2>
           <p id="track-status-sub" style="color: var(--color-on-surface-variant); font-size: 0.95rem; margin-top: 0.35rem;">
@@ -834,18 +834,18 @@
           </p>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
-          <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); padding: 0.75rem 1.35rem; border-radius: var(--radius-md); text-align: right;">
+        <div class="tracking-header-actions">
+          <div class="tracking-eta-box">
             <div style="font-size: 0.75rem; font-weight: 800; color: #855300; text-transform: uppercase;">Tiempo Estimado</div>
             <div id="track-eta" style="font-family: var(--font-epilogue); font-size: 1.45rem; font-weight: 900; color: #b70011;">15-20 min</div>
           </div>
           <button onclick="App.viewReceiptForCurrentOrder()" class="btn-customize" style="background: var(--neu-bg); color: #0284c7; box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); font-size: 0.85rem; padding: 0.75rem 1.15rem;" title="Ver comprobante de pago oficial y factura electrónica">
             <span class="material-symbols-outlined" style="font-size: 18px;">receipt_long</span>
-            Ver Factura
+            <span>Ver Factura</span>
           </button>
           <button onclick="App.autoAdvanceDemoOrder()" class="btn-customize" style="background: var(--neu-bg); color: var(--color-on-surface); box-shadow: var(--neu-extruded-sm); border: 1px solid var(--color-border-subtle); font-size: 0.85rem; padding: 0.75rem 1.15rem;" title="Simular que el pedido avanza de etapa">
             <span class="material-symbols-outlined" style="font-size: 18px; color: #fea619;">fast_forward</span>
-            Simular Avance
+            <span>Simular Avance</span>
           </button>
         </div>
       </div>
@@ -1034,9 +1034,9 @@
             Tu Repartidor Asignado
           </h4>
 
-          <div style="background: var(--neu-bg); box-shadow: var(--neu-extruded); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: 1.75rem;">
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.35rem;">
-              <img id="track-rider-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" alt="Rider" style="width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; box-shadow: var(--neu-extruded-sm); border: 3px solid #fea619;">
+          <div class="tracking-rider-card">
+            <div class="tracking-rider-profile">
+              <img id="track-rider-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" alt="Rider" style="width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; box-shadow: var(--neu-extruded-sm); border: 3px solid #fea619; flex-shrink: 0;">
               <div>
                 <h5 id="track-rider-name" style="font-family: var(--font-epilogue); font-size: 1.25rem; font-weight: 900; color: var(--color-on-surface); margin: 0;">Carlos Mendoza</h5>
                 <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 800; color: #855300; margin-top: 0.25rem;">

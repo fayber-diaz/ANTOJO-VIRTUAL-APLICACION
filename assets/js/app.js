@@ -150,6 +150,15 @@ const App = {
     if (['explorar', 'checkout', 'rastreo'].includes(hash)) {
       this.navigate(hash);
     }
+
+    // 3. Reajuste responsivo automático del mapa GPS al cambiar tamaño o rotar pantalla (Móvil / Tablet / PC)
+    const handleViewportResize = () => {
+      if (this.state.leafletMap) {
+        setTimeout(() => this.state.leafletMap.invalidateSize(), 150);
+      }
+    };
+    window.addEventListener('resize', handleViewportResize);
+    window.addEventListener('orientationchange', handleViewportResize);
   },
 
   // Guardar y cargar carrito en localStorage

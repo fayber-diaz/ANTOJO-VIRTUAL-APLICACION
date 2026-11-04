@@ -23,3 +23,4 @@
     <include file="src/main/resources/db/changelog/changesets/004-neiva-gps-routes-and-landmarks.sql" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
+

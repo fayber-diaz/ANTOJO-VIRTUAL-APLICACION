@@ -171,3 +171,4 @@ INSERT IGNORE INTO `toppings_catalog` (`code`, `name`, `topping_group`, `dish_ty
 ('TOP_ALMENDRAS',  'Almendras Fileteadas Tostadas & Maní',        'chocolates_galletas', 'dulce',  2500, 130, 1),
 ('TOP_NUTELLA_EX', 'Inyección Extra de Nutella Pura (30ml)',      'siropes_dulces',      'dulce',  3800, 190, 1),
 ('TOP_LOTUS',      'Galleta Lotus Biscoff Entera + Triturada',    'chocolates_galletas', 'dulce',  3200, 150, 1);
+

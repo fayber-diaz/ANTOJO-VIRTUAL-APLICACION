@@ -99,10 +99,12 @@ public class InstallViewHandler implements HttpHandler {
             sb.append(".inst-card { padding: 22px; border-radius: 22px; background: var(--neu-bg); box-shadow: var(--neu-extruded); border:1px solid var(--color-border-subtle); margin-bottom: 20px; }");
             sb.append(".tbl-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }");
             sb.append(".tbl-pill { padding: 12px 14px; border-radius: 14px; background: var(--neu-bg); box-shadow: var(--neu-inset-sm); border:1px solid var(--color-border-subtle); display:flex; justify-content:space-between; align-items:center; font-size:0.84rem; font-weight:700; }");
-            sb.append(".lb-table { width:100%; border-collapse:collapse; margin-top:14px; font-size:0.82rem; }");
+            sb.append(".lb-table { width:100%; border-collapse:collapse; margin-top:14px; font-size:0.82rem; min-width: 620px; }");
+            sb.append(".lb-table-scroll { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }");
             sb.append(".lb-table th, .lb-table td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--color-border-subtle); }");
             sb.append(".lb-table th { font-weight:800; color:var(--color-on-surface-variant); text-transform:uppercase; font-size:0.74rem; }");
             sb.append(".badge-exec { display:inline-block; padding:3px 9px; border-radius:999px; background:#dcfce7; color:#166534; font-weight:800; font-size:0.72rem; }");
+            sb.append("@media (max-width: 640px) { .inst-wrap { padding: 0 10px; margin: 14px auto; } .inst-card { padding: 14px; border-radius: 16px; } .tbl-grid { grid-template-columns: 1fr 1fr; gap: 8px; } }");
             sb.append("</style></head><body><div class=\"inst-wrap\">");
 
             sb.append("<div class=\"inst-card\" style=\"display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;\"><div>");
