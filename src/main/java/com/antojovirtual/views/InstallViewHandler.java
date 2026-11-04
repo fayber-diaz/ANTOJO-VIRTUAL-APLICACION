@@ -40,7 +40,12 @@ public class InstallViewHandler implements HttpHandler {
                 }
             }
 
+            Map<String, Object> migRes = null;
             List<Map<String, Object>> changelogHistory = LiquibaseManager.getChangelogHistory();
+            if (changelogHistory.isEmpty() || "1".equals(query.get("run"))) {
+                migRes = LiquibaseManager.runMigrations("1".equals(query.get("force")));
+                changelogHistory = LiquibaseManager.getChangelogHistory();
+            }
             Map<String, Object> lockStatus = LiquibaseManager.getLockStatus();
 
             // Si es petición API JSON (/api/liquibase o ?format=json)
@@ -53,6 +58,9 @@ public class InstallViewHandler implements HttpHandler {
                 resp.put("lock_status", lockStatus);
                 resp.put("changesets_executed", changelogHistory.size());
                 resp.put("databasechangelog", changelogHistory);
+                if (migRes != null) {
+                    resp.put("migration_result", migRes);
+                }
                 HttpUtil.sendJson(ex, 200, resp);
                 return;
             }

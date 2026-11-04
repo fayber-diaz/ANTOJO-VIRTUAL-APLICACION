@@ -15,17 +15,17 @@ CREATE TABLE IF NOT EXISTS `comunas` (
   `is_active` TINYINT(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO `comunas` (`code`, `name`, `description`, `delivery_fee`, `estimated_minutes`, `center_lat`, `center_lng`) VALUES
-('comuna_1',  'Comuna 1 - Cándido / Camilo Torres',      'Zona norte residencial y universitaria (USCO)', 3800, '25-35 min', 2.946200, -75.296500),
-('comuna_2',  'Comuna 2 - Las Granjas / Los Mártires',    'Zona norte-centro de alta demanda gastronómica', 3200, '20-30 min', 2.941500, -75.284500),
-('comuna_3',  'Comuna 3 - Quirinal / Santa Inés',         'Sector empresarial, clínicas y parques',         3000, '18-25 min', 2.935500, -75.283500),
-('comuna_4',  'Comuna 4 - Centro Histórico / Malecón',    'Corazón comercial, Parque Santander y Río Magdalena', 2800, '15-22 min', 2.927800, -75.287500),
-('comuna_5',  'Comuna 5 - Altico / Buganviles',           'Zona oriente tradicional y Av. Buganviles',      3200, '20-30 min', 2.925500, -75.274000),
-('comuna_6',  'Comuna 6 - Timanco / Puertas del Sol',     'Sur de Neiva, centros comerciales y residencial', 4000, '30-40 min', 2.908500, -75.276000),
-('comuna_7',  'Comuna 7 - Ipanema / Las Brisas',          'Oriente alto residencial y gastronómico',        3600, '25-35 min', 2.926000, -75.264000),
-('comuna_8',  'Comuna 8 - Las Américas / Alfonso López',  'Oriente tradicional de la ciudad',               3900, '30-40 min', 2.921000, -75.258000),
-('comuna_9',  'Comuna 9 - Luis Carlos Galán / Norte',     'Norte extremo de Neiva',                         4200, '35-45 min', 2.956000, -75.291000),
-('comuna_10', 'Comuna 10 - Las Palmas / Oriente Alto',    'Zona oriente alta de expansión urbana',          4500, '35-50 min', 2.931000, -75.249000);
+INSERT IGNORE INTO `comunas` (`code`, `name`, `description`, `delivery_fee`, `estimated_minutes`) VALUES
+('comuna_1',  'Comuna 1 - Cándido / Camilo Torres',      'Zona norte residencial y universitaria (USCO)', 3800, '25-35 min'),
+('comuna_2',  'Comuna 2 - Las Granjas / Los Mártires',    'Zona norte-centro de alta demanda gastronómica', 3200, '20-30 min'),
+('comuna_3',  'Comuna 3 - Quirinal / Santa Inés',         'Sector empresarial, clínicas y parques',         3000, '18-25 min'),
+('comuna_4',  'Comuna 4 - Centro Histórico / Malecón',    'Corazón comercial, Parque Santander y Río Magdalena', 2800, '15-22 min'),
+('comuna_5',  'Comuna 5 - Altico / Buganviles',           'Zona oriente tradicional y Av. Buganviles',      3200, '20-30 min'),
+('comuna_6',  'Comuna 6 - Timanco / Puertas del Sol',     'Sur de Neiva, centros comerciales y residencial', 4000, '30-40 min'),
+('comuna_7',  'Comuna 7 - Ipanema / Las Brisas',          'Oriente alto residencial y gastronómico',        3600, '25-35 min'),
+('comuna_8',  'Comuna 8 - Las Américas / Alfonso López',  'Oriente tradicional de la ciudad',               3900, '30-40 min'),
+('comuna_9',  'Comuna 9 - Luis Carlos Galán / Norte',     'Norte extremo de Neiva',                         4200, '35-45 min'),
+('comuna_10', 'Comuna 10 - Las Palmas / Oriente Alto',    'Zona oriente alta de expansión urbana',          4500, '35-50 min');
 
 CREATE TABLE IF NOT EXISTS `banks` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,

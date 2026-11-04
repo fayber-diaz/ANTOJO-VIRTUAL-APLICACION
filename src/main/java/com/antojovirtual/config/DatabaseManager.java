@@ -33,32 +33,61 @@ public class DatabaseManager {
     public static final String DB_NAME = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : "antojo_virtual";
 
     private static final String JDBC_URL = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME
-            + "?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Bogota&allowMultiQueries=true";
+            + "?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Bogota&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true";
 
     private static boolean jdbcAvailable = false;
     private static String mysqlBinaryPath = "C:\\xampp\\mysql\\bin\\mysql.exe";
     private static boolean initialized = false;
 
     static {
+        File xamppMysql = new File("C:\\xampp\\mysql\\bin\\mysql.exe");
+        if (xamppMysql.exists()) {
+            mysqlBinaryPath = xamppMysql.getAbsolutePath();
+        } else {
+            mysqlBinaryPath = "mysql";
+        }
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             jdbcAvailable = true;
             System.out.println("[DatabaseManager] Driver JDBC MySQL detectado y activo.");
         } catch (ClassNotFoundException e) {
             jdbcAvailable = false;
-            File xamppMysql = new File("C:\\xampp\\mysql\\bin\\mysql.exe");
-            if (xamppMysql.exists()) {
-                mysqlBinaryPath = xamppMysql.getAbsolutePath();
-            } else {
-                mysqlBinaryPath = "mysql";
-            }
             System.out.println("[DatabaseManager] Modo puente nativo MySQL XAMPP activo (" + mysqlBinaryPath + ").");
+        }
+    }
+
+    public static synchronized void ensureXamppMySqlRunning() {
+        try (java.net.Socket s = new java.net.Socket()) {
+            s.connect(new java.net.InetSocketAddress(DB_HOST, Integer.parseInt(DB_PORT)), 800);
+            return;
+        } catch (Exception notRunning) {
+            File mysqld = new File("C:\\xampp\\mysql\\bin\\mysqld.exe");
+            File myIni = new File("C:\\xampp\\mysql\\bin\\my.ini");
+            if (mysqld.exists()) {
+                try {
+                    System.out.println("[XAMPP] Iniciando motor MySQL/MariaDB de XAMPP en puerto " + DB_PORT + "...");
+                    new ProcessBuilder(mysqld.getAbsolutePath(), "--defaults-file=" + myIni.getAbsolutePath())
+                            .redirectErrorStream(true)
+                            .start();
+                    for (int i = 0; i < 16; i++) {
+                        Thread.sleep(500);
+                        try (java.net.Socket s2 = new java.net.Socket()) {
+                            s2.connect(new java.net.InetSocketAddress(DB_HOST, Integer.parseInt(DB_PORT)), 500);
+                            System.out.println("[XAMPP] Motor MySQL/MariaDB activo en puerto " + DB_PORT + ".");
+                            break;
+                        } catch (Exception ignored) {}
+                    }
+                } catch (Exception e) {
+                    System.err.println("[XAMPP] No se pudo auto-iniciar mysqld: " + e.getMessage());
+                }
+            }
         }
     }
 
     public static synchronized void ensureInitialized() {
         if (initialized) return;
         try {
+            ensureXamppMySqlRunning();
             createDatabaseIfNotExists();
             int count = 0;
             try {
@@ -67,10 +96,9 @@ public class DatabaseManager {
 
             if (count == 0) {
                 resetAndSeedDatabase();
-            } else {
-                // Asegurar que todas las migraciones Liquibase estén sincronizadas en MySQL
-                LiquibaseManager.runMigrations(false);
             }
+            // Asegurar siempre que todas las migraciones Liquibase (001 a 004) estén sincronizadas en MySQL
+            LiquibaseManager.runMigrations(false);
             initialized = true;
         } catch (Exception e) {
             System.err.println("[DatabaseManager] Aviso inicializando BD MySQL + Liquibase: " + e.getMessage());
@@ -97,16 +125,19 @@ public class DatabaseManager {
     }
 
     public static void createDatabaseIfNotExists() throws Exception {
+        ensureXamppMySqlRunning();
         String createSql = "CREATE DATABASE IF NOT EXISTS `" + DB_NAME + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
         if (jdbcAvailable) {
-            String urlNoDb = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "?useUnicode=true&characterEncoding=utf8";
+            String urlNoDb = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true";
             try (Connection conn = DriverManager.getConnection(urlNoDb, DB_USER, DB_PASS);
                  Statement st = conn.createStatement()) {
                 st.execute(createSql);
+                return;
+            } catch (Exception e) {
+                jdbcAvailable = false;
             }
-        } else {
-            runMysqlCli(createSql, false);
         }
+        runMysqlCli(createSql, false);
     }
 
     public static void executeRawSqlScript(String sqlContent) throws Exception {
@@ -124,21 +155,12 @@ public class DatabaseManager {
     public static boolean resetAndSeedDatabase() {
         try {
             createDatabaseIfNotExists();
-            String[] sqlFiles = {
-                "database/antojo_virtual.sql",
-                "database/jwt_migration.sql",
-                "database/migrate_dulces.sql",
-                "database/migrate_28_sitios.sql",
-                "database/migrate_40_sitios.sql"
-            };
+            Path baseSql = Path.of("database/antojo_virtual.sql");
             boolean anyFound = false;
-            for (String relativePath : sqlFiles) {
-                Path p = Path.of(relativePath);
-                if (Files.exists(p)) {
-                    anyFound = true;
-                    String sqlContent = Files.readString(p, StandardCharsets.UTF_8);
-                    executeRawSqlScript(sqlContent);
-                }
+            if (Files.exists(baseSql)) {
+                anyFound = true;
+                String sqlContent = Files.readString(baseSql, StandardCharsets.UTF_8);
+                executeRawSqlScript(sqlContent);
             }
             // Ejecutar todas las migraciones Liquibase (001 a 004) y registrar en DATABASECHANGELOG
             LiquibaseManager.runMigrations(true);

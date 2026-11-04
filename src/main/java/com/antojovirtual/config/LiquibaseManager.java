@@ -22,7 +22,7 @@ public class LiquibaseManager {
     public static final String MASTER_CHANGELOG = "src/main/resources/db/changelog/db.changelog-master.xml";
     public static final String LIQUIBASE_VERSION = "4.29.2";
 
-    private static final Pattern INCLUDE_PATTERN = Pattern.compile("<include\\s+[^>]*file=\"([^\"]+)\"", Pattern.CASE_INSENSITIVE);
+    private static final Pattern INCLUDE_PATTERN = Pattern.compile("<include\\s+file=\"([^\"]+)\"", Pattern.CASE_INSENSITIVE);
     private static final Pattern CHANGESET_HEADER = Pattern.compile("^--\\s*changeset\\s+([^:\\s]+):([^\\s]+)(.*)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern COMMENT_HEADER = Pattern.compile("^--\\s*comment\\s+(.*)$", Pattern.CASE_INSENSITIVE);
 
@@ -42,6 +42,7 @@ public class LiquibaseManager {
 
             String deploymentId = String.valueOf(System.currentTimeMillis()).substring(3);
             List<String> changelogFiles = parseMasterChangelog(MASTER_CHANGELOG);
+            result.put("files_parsed", changelogFiles);
 
             int maxOrder = DatabaseManager.queryScalarInt("SELECT COALESCE(MAX(ORDEREXECUTED), 0) FROM `DATABASECHANGELOG`");
 
@@ -65,7 +66,7 @@ public class LiquibaseManager {
                         continue;
                     }
 
-                    // Ejecutar SQL del changeset en MySQL
+                    // Ejecutar SQL del changeset completo en MySQL
                     DatabaseManager.executeRawSqlScript(cs.sqlBody);
 
                     maxOrder++;
@@ -84,6 +85,7 @@ public class LiquibaseManager {
                                 Arrays.asList(cs.id, cs.author, cs.filename, nowStr, maxOrder, md5, cs.comment, LIQUIBASE_VERSION, deploymentId)
                         );
                     }
+                    System.out.println("[Liquibase] Changeset aplicado en MySQL: " + cs.author + ":" + cs.id + " (" + cs.filename + ")");
                     appliedNow.add(cs.author + ":" + cs.id + " (" + cs.filename + ")");
                 }
             }
