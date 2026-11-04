@@ -1,0 +1,1531 @@
+/* =========================================================
+   ANTOJO VIRTUAL - Sistema de Diseño Neumorfismo (Soft UI)
+   Neiva, Huila • XAMPP & MySQL Edition
+   ========================================================= */
+
+:root {
+  --font-epilogue: 'Epilogue', system-ui, -apple-system, sans-serif;
+  --font-jakarta: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Neumorphic Base Canvas & Surfaces */
+  --neu-bg: #e9eef5;
+  --neu-bg-light: #f3f7fd;
+  --neu-surface: #e9eef5;
+  --neu-surface-convex: linear-gradient(145deg, #f2f7ff, #d7dde6);
+  --neu-surface-concave: linear-gradient(145deg, #d7dde6, #f2f7ff);
+
+  /* Sombras Neumórficas Duales (Luz superior-izquierda + Sombra inferior-derecha) */
+  --neu-shadow-light: #ffffff;
+  --neu-shadow-dark: #c2cbd7;
+  --neu-shadow-darker: #abb5c2;
+
+  /* Sombras de Elevación Neumórfica (Extruded / Raised) */
+  --neu-extruded-sm: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+  --neu-extruded: 7px 7px 16px var(--neu-shadow-dark), -7px -7px 16px var(--neu-shadow-light);
+  --neu-extruded-lg: 12px 12px 28px var(--neu-shadow-dark), -12px -12px 28px var(--neu-shadow-light);
+  --neu-extruded-hover: 9px 9px 20px var(--neu-shadow-darker), -9px -9px 20px var(--neu-shadow-light);
+
+  /* Sombras Hundidas Neumórficas (Debossed / Inset / Pressed) */
+  --neu-inset-sm: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+  --neu-inset: inset 5px 5px 10px var(--neu-shadow-dark), inset -5px -5px 10px var(--neu-shadow-light);
+  --neu-inset-deep: inset 6px 6px 14px var(--neu-shadow-darker), inset -6px -6px 14px var(--neu-shadow-light);
+
+  /* Colores de Marca y Acento */
+  --color-primary: #b70011;
+  --color-primary-container: #dc2626;
+  --color-on-primary: #ffffff;
+  --color-primary-neu: linear-gradient(145deg, #ef3232, #c61f1f);
+  --color-primary-neu-shadow: 6px 6px 16px rgba(183, 0, 17, 0.35), -5px -5px 12px var(--neu-shadow-light);
+  --color-primary-neu-inset: inset 4px 4px 8px #9e000f, inset -3px -3px 6px #ff4d4d;
+
+  --color-secondary: #855300;
+  --color-secondary-container: #fea619;
+  --color-on-secondary: #ffffff;
+  --color-secondary-neu: linear-gradient(145deg, #ffb534, #e59312);
+  --color-secondary-neu-shadow: 5px 5px 14px rgba(254, 166, 25, 0.35), -5px -5px 12px var(--neu-shadow-light);
+
+  --color-tertiary: #00682e;
+  --color-tertiary-container: #1a8340;
+  --color-tertiary-neu-shadow: 5px 5px 14px rgba(26, 131, 64, 0.3), -5px -5px 12px var(--neu-shadow-light);
+
+  --color-on-surface: #192537;
+  --color-on-surface-variant: #566479;
+  --color-border-subtle: rgba(255, 255, 255, 0.6);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+}
+
+html {
+  font-size: 13.5px; /* Proporción ideal calibrada: equivale al 80% natural que el usuario requería */
+  scroll-behavior: smooth;
+}
+
+@media (min-width: 1600px) {
+  html {
+    font-size: 14.5px;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-jakarta);
+  background-color: var(--neu-bg);
+  color: var(--color-on-surface);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Material Symbols Icon */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  vertical-align: middle;
+}
+
+.container {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* =========================================================
+   HEADER PRINCIPAL NEUMÓRFICO
+   ========================================================= */
+.header-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--neu-bg);
+  border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: 0 6px 16px rgba(194, 203, 215, 0.45), 0 -2px 8px rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.55rem 0;
+}
+
+/* Logo con efecto esculpido */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-neu);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 4px 4px 10px rgba(194, 203, 215, 0.8), -3px -3px 8px rgba(255, 255, 255, 0.9);
+  transition: transform 0.2s ease;
+}
+
+.brand-logo:hover .brand-icon {
+  transform: scale(1.05);
+}
+
+.brand-text h1 {
+  font-family: var(--font-epilogue);
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--color-on-surface);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.brand-text span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--color-primary-container);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Selector de Comuna Neumórfico */
+.comuna-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--neu-bg);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--neu-extruded-sm);
+  border: 1px solid var(--color-border-subtle);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comuna-badge:hover {
+  box-shadow: var(--neu-inset-sm);
+}
+
+.comuna-select {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  cursor: pointer;
+  outline: none;
+  font-size: 0.8rem;
+}
+
+/* Barra de Búsqueda Hundida (Debossed / Inset) */
+.search-wrapper {
+  flex: 1;
+  max-width: 380px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.55rem 0.85rem 0.55rem 2.5rem;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset);
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.search-input:focus {
+  box-shadow: var(--neu-inset-deep);
+  color: #111c2d;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-on-surface-variant);
+  pointer-events: none;
+  font-size: 18px;
+}
+
+/* Botones del Header Neumórficos */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.btn-cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--color-primary-neu);
+  color: #ffffff;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.84rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--color-primary-neu-shadow);
+  transition: all 0.2s ease;
+}
+
+.btn-cart:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 16px rgba(183, 0, 17, 0.45), -4px -4px 10px rgba(255, 255, 255, 0.8);
+}
+
+.btn-cart:active {
+  transform: translateY(1px);
+  box-shadow: var(--color-primary-neu-inset);
+}
+
+.cart-count-badge {
+  background: #ffffff;
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 900;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.btn-admin-link {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--neu-bg);
+  color: var(--color-on-surface);
+  text-decoration: none;
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: var(--neu-extruded-sm);
+  border: 1px solid var(--color-border-subtle);
+  transition: all 0.2s ease;
+}
+
+.btn-admin-link:hover {
+  box-shadow: var(--neu-extruded);
+  color: var(--color-primary-container);
+}
+
+.btn-admin-link:active {
+  box-shadow: var(--neu-inset-sm);
+}
+
+/* =========================================================
+   RIBBON DE NAVEGACIÓN RÁPIDA (SEGMENTED NEUMORPHIC BAR)
+   ========================================================= */
+.nav-ribbon {
+  background: var(--neu-bg);
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.nav-ribbon-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow-x: auto;
+}
+
+/* Pista de botones segmentados */
+.screen-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--neu-bg);
+  padding: 0.4rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--neu-inset-sm);
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--color-on-surface);
+}
+
+/* Tab activo con elevación suave */
+.tab-btn.active {
+  background: var(--neu-bg);
+  color: var(--color-primary-container);
+  font-weight: 800;
+  box-shadow: var(--neu-extruded-sm);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* =========================================================
+   HERO BANNER NEUMÓRFICO
+   ========================================================= */
+.hero-banner {
+  background: var(--neu-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 2rem;
+  margin: 1.2rem 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--neu-extruded-lg);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.hero-content {
+  max-width: 620px;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  color: #855300;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.85rem;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.hero-title {
+  font-family: var(--font-epilogue);
+  font-size: 1.9rem;
+  font-weight: 900;
+  line-height: 1.18;
+  margin-bottom: 0.65rem;
+  letter-spacing: -0.02em;
+  color: var(--color-on-surface);
+}
+
+.hero-title span {
+  color: var(--color-primary-container);
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8), -1px -1px 2px rgba(194, 203, 215, 0.6);
+}
+
+.hero-desc {
+  font-size: 0.92rem;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 1.15rem;
+  line-height: 1.5;
+}
+
+/* Ranura de cupón promocional hundida (Debossed Coupon Slot) */
+.coupon-hero-box {
+  display: inline-flex;
+  align-items: center;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.9rem;
+  gap: 0.65rem;
+}
+
+.coupon-code-text {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--color-primary-container);
+  letter-spacing: 0.06em;
+}
+
+.btn-copy-coupon {
+  background: var(--color-secondary-neu);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--color-secondary-neu-shadow);
+  transition: all 0.2s ease;
+}
+
+.btn-copy-coupon:hover {
+  transform: translateY(-2px);
+}
+
+.btn-copy-coupon:active {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================================================
+   CATEGORÍAS (NEUMORPHIC PILL CHIPS)
+   ========================================================= */
+.categories-slider {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 0.45rem 0 1rem 0;
+  scrollbar-width: none;
+}
+.categories-slider::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  border: 1px solid var(--color-border-subtle);
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cat-chip:hover {
+  box-shadow: var(--neu-extruded);
+  color: var(--color-primary-container);
+  transform: translateY(-2px);
+}
+
+/* Chip Activo: Pasa a estar hundido / presionado */
+.cat-chip.active {
+  background: var(--neu-bg);
+  color: var(--color-primary-container);
+  box-shadow: var(--neu-inset);
+  border-color: rgba(220, 38, 38, 0.3);
+  transform: translateY(0);
+}
+
+/* =========================================================
+   GRILLA DE PLATOS Y RESTAURANTES NEUMÓRFICA
+   ========================================================= */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.35rem 0 0.85rem 0;
+}
+
+.section-title {
+  font-family: var(--font-epilogue);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dishes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Tarjeta Neumórfica Esculpida */
+.dish-card {
+  background: var(--neu-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-extruded);
+  border: 1px solid var(--color-border-subtle);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.75rem;
+}
+
+.dish-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-extruded-hover);
+}
+
+/* Marco hundido para la imagen del plato */
+.dish-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 155px;
+  background: var(--neu-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--neu-inset-sm);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.dish-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.dish-card:hover .dish-img {
+  transform: scale(1.06);
+}
+
+.dish-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(233, 238, 245, 0.92);
+  backdrop-filter: blur(8px);
+  color: var(--color-on-surface);
+  box-shadow: var(--neu-extruded-sm);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.dish-content {
+  padding: 0.75rem 0.25rem 0.25rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.dish-rest-name {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--color-primary-container);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.dish-title {
+  font-family: var(--font-epilogue);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-on-surface);
+  line-height: 1.25;
+  margin-bottom: 0.35rem;
+}
+
+.dish-desc {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  line-height: 1.45;
+  margin-bottom: 0.65rem;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 2.9em;
+}
+
+.dish-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.dish-tag-item {
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset-sm);
+  color: var(--color-on-surface-variant);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.dish-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.dish-price {
+  font-family: var(--font-epilogue);
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: var(--color-on-surface);
+}
+
+/* Botón Personalizar Neumórfico */
+.btn-customize {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--color-primary-neu);
+  color: #ffffff;
+  border: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: var(--color-primary-neu-shadow);
+  transition: all 0.2s ease;
+}
+
+.btn-customize:hover {
+  transform: translateY(-2px);
+  box-shadow: 7px 7px 18px rgba(183, 0, 17, 0.45), -5px -5px 12px var(--neu-shadow-light);
+}
+
+.btn-customize:active {
+  transform: translateY(1px);
+  box-shadow: var(--color-primary-neu-inset);
+}
+
+/* =========================================================
+   MODAL DE PERSONALIZACIÓN NEUMÓRFICO (SCREEN 3)
+   ========================================================= */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 37, 55, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--neu-bg);
+  width: 100%;
+  max-width: 580px;
+  max-height: 86vh;
+  border-radius: var(--radius-md);
+  box-shadow: 15px 15px 40px rgba(0, 0, 0, 0.28), -8px -8px 24px rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(16px) scale(0.97);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-backdrop.open .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-header {
+  position: relative;
+  background: var(--neu-bg);
+  color: var(--color-on-surface);
+  padding: 1.1rem 1.35rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: 0 4px 12px rgba(194, 203, 215, 0.4);
+}
+
+.modal-close-btn {
+  background: var(--neu-bg);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-on-surface);
+  box-shadow: var(--neu-extruded-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  box-shadow: var(--neu-inset-sm);
+}
+
+.modal-body {
+  padding: 1.15rem 1.35rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-section {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.modal-section:last-child {
+  border-bottom: none;
+}
+
+.modal-section-title {
+  font-family: var(--font-epilogue);
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-section-sub {
+  font-size: 0.78rem;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 0.75rem;
+}
+
+/* Filas de opciones neumórficas */
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.95rem;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.55rem;
+  cursor: pointer;
+  border: 1px solid var(--color-border-subtle);
+  transition: all 0.2s ease;
+}
+
+.option-row:hover {
+  box-shadow: var(--neu-extruded);
+}
+
+/* Opción seleccionada: Hundida/Presionada */
+.option-row.selected {
+  box-shadow: var(--neu-inset);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.option-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.option-price {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--color-primary-container);
+}
+
+/* Contador Neumórfico de Toppings */
+.counter-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset-sm);
+  border-radius: var(--radius-full);
+  padding: 0.25rem 0.45rem;
+}
+
+.counter-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  color: var(--color-on-surface);
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.counter-btn:hover {
+  color: var(--color-primary-container);
+}
+
+.counter-btn:active {
+  box-shadow: var(--neu-inset-sm);
+}
+
+.counter-value {
+  font-weight: 900;
+  font-size: 0.9rem;
+  min-width: 20px;
+  text-align: center;
+  color: var(--color-primary-container);
+}
+
+/* Footer del Modal */
+.modal-footer {
+  background: var(--neu-bg);
+  border-top: 1px solid var(--color-border-subtle);
+  padding: 0.85rem 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  box-shadow: 0 -6px 16px rgba(194, 203, 215, 0.35);
+}
+
+.modal-total-display {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-total-lbl {
+  font-size: 0.72rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.modal-total-price {
+  font-family: var(--font-epilogue);
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--color-on-surface);
+}
+
+.btn-add-modal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--color-primary-neu);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--color-primary-neu-shadow);
+  transition: all 0.2s ease;
+}
+
+.btn-add-modal:hover {
+  transform: translateY(-2px);
+  box-shadow: 8px 8px 22px rgba(183, 0, 17, 0.45);
+}
+
+.btn-add-modal:active {
+  box-shadow: var(--color-primary-neu-inset);
+}
+
+/* =========================================================
+   PANTALLA DE CHECKOUT NEUMÓRFICA
+   ========================================================= */
+.checkout-view {
+  margin: 1.25rem 0;
+}
+
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1.1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkout-card {
+  background: var(--neu-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-extruded);
+  border: 1px solid var(--color-border-subtle);
+  padding: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.checkout-card-title {
+  font-family: var(--font-epilogue);
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-on-surface);
+  margin-bottom: 0.4rem;
+}
+
+/* Inputs, Textareas y Selects Hundidos (Debossed) */
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 0.65rem 0.95rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset);
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  box-shadow: var(--neu-inset-deep);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+/* Métodos de Pago en Tarjetas Neumórficas */
+.payment-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.pay-card {
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 0.65rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.pay-card:hover {
+  box-shadow: var(--neu-extruded);
+}
+
+/* Método de pago seleccionado: Hundido/Presionado */
+.pay-card.active {
+  box-shadow: var(--neu-inset);
+  color: var(--color-primary-container);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+/* Resumen del Pedido (Sidebar Neumórfico) */
+.order-summary-card {
+  background: var(--neu-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-extruded-lg);
+  border: 1px solid var(--color-border-subtle);
+  padding: 1.4rem;
+  position: sticky;
+  top: 90px;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+}
+
+.summary-total {
+  font-family: var(--font-epilogue);
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--color-on-surface);
+  padding-top: 1rem;
+  border-top: 2px dashed rgba(194, 203, 215, 0.8);
+  margin-top: 1rem;
+}
+
+.btn-confirm-order {
+  width: 100%;
+  background: var(--color-primary-neu);
+  color: white;
+  border: none;
+  padding: 0.85rem;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--color-primary-neu-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.btn-confirm-order:hover {
+  transform: translateY(-2px);
+  box-shadow: 8px 8px 24px rgba(183, 0, 17, 0.45);
+}
+
+.btn-confirm-order:active {
+  box-shadow: var(--color-primary-neu-inset);
+}
+
+/* =========================================================
+   RASTREO EN VIVO NEUMÓRFICO (LIVE TRACKING)
+   ========================================================= */
+.tracking-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: 2.5rem 0;
+}
+
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+}
+
+.tracking-step-dot {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  color: var(--color-on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  margin-bottom: 0.6rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.tracking-step.done .tracking-step-dot {
+  background: var(--color-tertiary-container);
+  color: #ffffff;
+  box-shadow: var(--color-tertiary-neu-shadow);
+}
+
+.tracking-step.active .tracking-step-dot {
+  background: var(--color-primary-neu);
+  color: white;
+  box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.2), var(--color-primary-neu-shadow);
+  animation: pulseNeu 1.8s infinite;
+}
+
+@keyframes pulseNeu {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Ranura de progreso hundida (Debossed track) */
+.tracking-line {
+  position: absolute;
+  top: 24px;
+  left: 6%;
+  right: 6%;
+  height: 8px;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset-sm);
+  border-radius: var(--radius-full);
+  z-index: 1;
+}
+
+.tracking-line-progress {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-tertiary-container), var(--color-primary-container));
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+  transition: width 0.5s ease;
+}
+
+/* Marco del mapa interactivo de Neiva */
+.map-canvas-container {
+  width: 100%;
+  height: 330px;
+  background: var(--neu-bg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--neu-inset);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* =========================================================
+   FOOTER DEL SITIO NEUMÓRFICO
+   ========================================================= */
+.site-footer {
+  background: var(--neu-bg);
+  color: var(--color-on-surface);
+  padding: 4rem 0 2.5rem 0;
+  margin-top: 5rem;
+  border-top: 1px solid var(--color-border-subtle);
+  box-shadow: 0 -10px 25px rgba(194, 203, 215, 0.4);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .footer-grid { grid-template-columns: 1fr; }
+}
+
+.footer-col h4 {
+  font-family: var(--font-epilogue);
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: var(--color-on-surface);
+}
+
+.footer-col ul {
+  list-style: none;
+}
+
+.footer-col li {
+  margin-bottom: 0.65rem;
+}
+
+.footer-col a {
+  color: var(--color-on-surface-variant);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: var(--color-primary-container);
+}
+
+/* Toast flotante Neumórfico */
+.toast-notice {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  background: var(--neu-bg);
+  color: var(--color-on-surface);
+  padding: 1rem 1.4rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-extruded-lg);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  animation: slideUpNeu 0.3s ease;
+}
+
+@keyframes slideUpNeu {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* =========================================================
+   SISTEMA MEJORADO DE TOPPINGS & MAPA GPS + ADAPTACIÓN MÓVIL / PC
+   ========================================================= */
+
+/* Barra de filtro rápido de Toppings en el Modal */
+.toppings-filter-bar {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin: 0.65rem 0 0.85rem 0;
+}
+
+.topping-group-btn {
+  padding: 0.38rem 0.82rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.topping-group-btn.active {
+  background: linear-gradient(135deg, #dc2626, #ea580c);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.topping-group-btn.sweet.active {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+}
+
+/* Resumen vivo de Toppings seleccionados */
+.selected-toppings-summary {
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset-sm);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.selected-topping-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.68rem;
+  border-radius: 9999px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Marcadores Avanzados del Mapa GPS de Neiva */
+.rider-speed-floating-tag {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #38bdf8;
+  font-size: 0.66rem;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.waypoint-checkpoint-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #dc2626;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: all 0.3s ease;
+}
+
+.waypoint-checkpoint-dot.passed {
+  background: #10b981;
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+}
+
+.landmark-map-badge {
+  background: rgba(15, 23, 42, 0.88);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+  border: 1px solid rgba(254, 166, 25, 0.55);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Barra de Progreso de Calles debajo del Mapa */
+.street-progress-strip {
+  margin-top: 0.85rem;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-inset-sm);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+}
+
+.street-waypoints-pills {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.wp-step-pill {
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--neu-bg);
+  box-shadow: var(--neu-extruded-sm);
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.wp-step-pill.passed {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.wp-step-pill.current {
+  background: linear-gradient(135deg, #dc2626, #ea580c);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* Barra de Navegación Inferior para Móviles (App Nativa en Navegador) */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  background: rgba(235, 240, 247, 0.96);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-border-subtle);
+  box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.12);
+  padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom, 0px)) 0.5rem;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--color-on-surface-variant);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.35rem 0.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+}
+
+.mobile-nav-item.active {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 900;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/*Grilla Responsiva de Rastreo (PC vs Móvil) */
+.tracking-main-grid {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 980px) {
+  .tracking-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 74px;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  .header-container {
+    gap: 0.65rem;
+  }
+  .search-wrapper {
+    order: 3;
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .header-actions .btn-admin-link span:not(.material-symbols-outlined) {
+    display: none;
+  }
+  .modal-card {
+    width: 100%;
+    max-height: 92vh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-top: auto;
+  }
+  .toast-notice {
+    bottom: 82px;
+    left: 14px;
+    right: 14px;
+  }
+}
+

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f4f8fd"/>
+      <stop offset="100%" stop-color="#d6e0ec"/>
+    </linearGradient>
+    <linearGradient id="burgerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fea619"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+    <filter id="neuShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="12" dy="12" stdDeviation="16" flood-color="#94a3b8" flood-opacity="0.45"/>
+      <feDropShadow dx="-10" dy="-10" stdDeviation="14" flood-color="#ffffff" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+  
+  <!-- Base Redondeada Neumórfica -->
+  <rect x="40" y="40" width="432" height="432" rx="100" fill="url(#bgGrad)" filter="url(#neuShadow)"/>
+  
+  <!-- Pan Superior -->
+  <path d="M160 210 C160 145, 352 145, 352 210 Z" fill="url(#burgerGrad)"/>
+  
+  <!-- Semillas de Sésamo -->
+  <circle cx="215" cy="175" r="5" fill="#ffffff" opacity="0.85"/>
+  <circle cx="256" cy="165" r="5" fill="#ffffff" opacity="0.85"/>
+  <circle cx="295" cy="178" r="5" fill="#ffffff" opacity="0.85"/>
+  
+  <!-- Queso Fundido Dorado Huilense -->
+  <polygon points="152,222 360,222 340,248 290,236 256,258 210,236 170,250" fill="#fea619"/>
+  
+  <!-- Carne a la Parrilla 200g -->
+  <rect x="156" y="254" width="200" height="34" rx="14" fill="#451a03"/>
+  
+  <!-- Rodaja de Tomate y Lechuga -->
+  <rect x="165" y="294" width="182" height="14" rx="7" fill="#16a34a"/>
+  
+  <!-- Pan Inferior -->
+  <rect x="160" y="316" width="192" height="38" rx="16" fill="url(#burgerGrad)"/>
+  
+  <!-- Letras Neumórficas "AV" -->
+  <text x="256" y="415" font-family="'Epilogue', 'Arial Black', sans-serif" font-size="44" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="2">ANTOJO</text>
+</svg>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <!-- ================================================================
+         MASTER CHANGELOG LIQUIBASE — ANTOJO VIRTUAL (NEIVA, HUILA)
+         Base de Datos: MySQL / MariaDB en XAMPP (antojo_virtual)
+         ================================================================ -->
+
+    <!-- Changeset 001: Esquema Base, Comunas, Bancos PSE, Usuarios, JWT, Pedidos y Facturación DIAN -->
+    <include file="src/main/resources/db/changelog/changesets/001-initial-schema.sql" relativeToChangelogFile="false"/>
+
+    <!-- Changeset 002: Arquitectura de Toppings, Salsas, Siropes y Modificadores Dulces/Salados -->
+    <include file="src/main/resources/db/changelog/changesets/002-toppings-and-modifiers.sql" relativeToChangelogFile="false"/>
+
+    <!-- Changeset 003: Semilla Masiva de 40 Sitios y 105+ Productos (Comidas Rápidas y Postres/Dulces) -->
+    <include file="src/main/resources/db/changelog/changesets/003-seed-fastfood-and-desserts.sql" relativeToChangelogFile="false"/>
+
+    <!-- Changeset 004: Rutas GPS Satelitales por Calles Reales de Neiva y Puntos de Referencia -->
+    <include file="src/main/resources/db/changelog/changesets/004-neiva-gps-routes-and-landmarks.sql" relativeToChangelogFile="false"/>
+
+</databaseChangeLog>
